@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e2b96f"/>
+      <stop offset="100%" style="stop-color:#c9953c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- Book - left page -->
+  <path d="M512 280 C512 280, 340 260, 240 290 C240 290, 220 295, 220 320 L220 700 C220 725, 240 730, 240 730 C340 700, 512 720, 512 720 Z"
+        fill="none" stroke="#e2b96f" stroke-width="28" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- Book - right page -->
+  <path d="M512 280 C512 280, 684 260, 784 290 C784 290, 804 295, 804 320 L804 700 C804 725, 784 730, 784 730 C684 700, 512 720, 512 720 Z"
+        fill="none" stroke="#e2b96f" stroke-width="28" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- Text lines on left page -->
+  <line x1="290" y1="380" x2="470" y2="370" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="280" y1="430" x2="460" y2="420" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="270" y1="480" x2="450" y2="470" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="265" y1="530" x2="445" y2="520" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="260" y1="580" x2="420" y2="570" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- Text lines on right page -->
+  <line x1="554" y1="370" x2="734" y2="380" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="554" y1="420" x2="744" y2="430" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="554" y1="470" x2="754" y2="480" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="554" y1="520" x2="760" y2="530" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
+  <line x1="554" y1="570" x2="740" y2="580" stroke="#e2b96f" stroke-width="12" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- Pen / Quill -->
+  <g transform="translate(620, 200) rotate(35)">
+    <!-- Pen body -->
+    <rect x="-8" y="0" width="16" height="200" rx="4" fill="url(#accent)" opacity="0.95"/>
+    <!-- Pen nib -->
+    <path d="M-8 200 L0 240 L8 200 Z" fill="#e2b96f" opacity="0.95"/>
+    <!-- Pen top -->
+    <rect x="-8" y="-10" width="16" height="14" rx="3" fill="#c9953c" opacity="0.8"/>
+  </g>
+
+  <!-- Spine highlight -->
+  <line x1="512" y1="275" x2="512" y2="720" stroke="#e2b96f" stroke-width="6" opacity="0.3"/>
+</svg>
