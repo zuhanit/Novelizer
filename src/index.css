@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Ayu Light - UI Colors */
+  --color-ui-foreground: #8a9199;
+  --color-ui-background: #f8f9fa;
+  --color-ui-line: #6b7d8f1f;
+  --color-ui-selection-active: #56728f1f;
+  --color-ui-selection-normal: #6b7d8f1f;
+  --color-ui-panel-background: #f3f4f5;
+  --color-ui-panel-shadow: #00000026;
+
+  /* Ayu Light - Editor Colors */
+  --color-editor-foreground: #5c6166;
+  --color-editor-background: #fcfcfc;
+  --color-editor-line: #8a91991a;
+  --color-editor-selection-active: #035bd626;
+  --color-editor-selection-inactive: #035bd612;
+  --color-editor-find-match-active: #9f40ff2b;
+  --color-editor-find-match-inactive: #9f40ffcc;
+  --color-editor-gutter-active: #8a9199cc;
+  --color-editor-gutter-normal: #8a919966;
+  --color-editor-indent-guide-active: #8a919959;
+  --color-editor-indent-guide-normal: #8a91992e;
+
+  /* Ayu Light - VCS Colors */
+  --color-vcs-added: #6cbf43;
+  --color-vcs-modified: #478acc;
+  --color-vcs-removed: #ff7383;
+
+  /* Ayu Light - Text Colors */
+  --color-foreground: #5c6166;
+  --color-muted-foreground: #8a9199;
+
+  /* Ayu Light - Accent Colors */
+  --color-accent-enabled: #fa8d3e;
+
+  --shadow-popup: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 0 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Ayu Mirage - UI Colors */
+    --color-ui-foreground: #707a8c;
+    --color-ui-background: #1f2430;
+    --color-ui-line: #171b24;
+    --color-ui-selection-active: #63759926;
+    --color-ui-selection-normal: #69758c1f;
+    --color-ui-panel-background: #1c212b;
+    --color-ui-panel-shadow: #12151cb3;
+
+    /* Ayu Mirage - Editor Colors */
+    --color-editor-foreground: #cccac2;
+    --color-editor-background: #242936;
+    --color-editor-line: #1a1f29;
+    --color-editor-selection-active: #409fff40;
+    --color-editor-selection-inactive: #409fff21;
+    --color-editor-find-match-active: #695380;
+    --color-editor-find-match-inactive: #69538066;
+    --color-editor-gutter-active: #8a9199cc;
+    --color-editor-gutter-normal: #8a919966;
+    --color-editor-indent-guide-active: #8a919959;
+    --color-editor-indent-guide-normal: #8a91992e;
+
+    /* Ayu Mirage - VCS Colors */
+    --color-vcs-added: #87d96c;
+    --color-vcs-modified: #80bfff;
+    --color-vcs-removed: #f27983;
+
+    /* Ayu Mirage - Text Colors */
+    --color-foreground: #cccac2;
+    --color-muted-foreground: #707a8c;
+
+    /* Ayu Mirage - Accent Colors */
+    --color-accent-enabled: #ffad66;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@layer components {
+  .title {
+    h1 {
+      font-size: var(--text-base);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    h2 {
+      font-size: var(--text-base);
+      font-weight: 500;
+      line-height: 1;
+    }
+  }
+}
