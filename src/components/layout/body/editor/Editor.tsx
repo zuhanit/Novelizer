@@ -18,7 +18,8 @@ const editorVariants = tv({
     ],
     content: "flex-1 w-full overflow-y-auto",
     blocks: "flex flex-col items-center w-175 mx-auto",
-    empty: "flex-1 flex items-center justify-center text-muted-foreground text-sm",
+    empty:
+      "flex-1 flex items-center justify-center text-muted-foreground text-sm",
   },
 });
 
@@ -48,16 +49,20 @@ export function Editor() {
       <TabsList>
         {openFiles.map((file) => (
           <TabsTrigger key={file.id} value={file.id} className={tabTrigger()}>
-            <span className="group-data-[state=active]:font-semibold">
-              {file.fileName}
-            </span>
-            <Button onClick={(e) => handleClose(e, file.id)}>
-              <X
-                size={16}
-                strokeWidth={2}
-                className="text-muted-foreground invisible group-hover:visible group-data-[state=active]:visible"
-              />
-            </Button>
+            <div>
+              <span className="group-data-[state=active]:font-semibold">
+                {file.fileName}
+              </span>
+              <Button asChild onClick={(e) => handleClose(e, file.id)}>
+                <span>
+                  <X
+                    size={16}
+                    strokeWidth={2}
+                    className="text-muted-foreground invisible group-hover:visible group-data-[state=active]:visible"
+                  />
+                </span>
+              </Button>
+            </div>
           </TabsTrigger>
         ))}
       </TabsList>
