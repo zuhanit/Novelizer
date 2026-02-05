@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { tv } from "tailwind-variants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/Tabs";
 import { Block } from "./Block";
@@ -25,12 +26,30 @@ const editorVariants = tv({
 
 export function Editor() {
   const { base, tabTrigger, content, blocks, empty } = editorVariants();
-  const { openFiles, activeTab, closeFile, setActiveTab } = useEditorStore();
+  const {
+    openFiles,
+    activeTab,
+    closeFile,
+    setActiveTab,
+    focusedBlockIndex,
+    setFocusedBlock,
+  } = useEditorStore();
+  const blockRefs = useRef<(HTMLElement | null)[]>([]);
 
   const handleClose = (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation();
     closeFile(fileId);
   };
+
+  // Scroll to focused block when focusedBlockIndex changes
+  useEffect(() => {
+    if (focusedBlockIndex !== null && blockRefs.current[focusedBlockIndex]) {
+      blockRefs.current[focusedBlockIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [focusedBlockIndex]);
 
   if (openFiles.length === 0) {
     return (
@@ -72,10 +91,16 @@ export function Editor() {
             {file.blocks.map((block, idx) => (
               <Block
                 key={idx}
+                ref={(el) => {
+                  blockRefs.current[idx] = el;
+                }}
                 kind={block.kind}
                 vcsState={block.vcsState}
                 lineno={idx + 1}
                 content={block.content}
+                isFocused={focusedBlockIndex === idx}
+                index={idx}
+                onFocus={setFocusedBlock}
               />
             ))}
           </div>

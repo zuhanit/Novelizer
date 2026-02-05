@@ -1,3 +1,4 @@
+import { forwardRef, useEffect } from "react";
 import { tv, VariantProps } from "tailwind-variants";
 import {
   EditorProvider,
@@ -49,8 +50,22 @@ const block = tv({
   },
 });
 
-function BlockBubbleMenu({ className }: { className: string }) {
+function BlockContent({
+  className,
+  isFocused,
+}: {
+  className: string;
+  isFocused?: boolean;
+}) {
   const { editor } = useCurrentEditor();
+
+  // Focus editor when block is focused
+  useEffect(() => {
+    if (isFocused && editor) {
+      editor.commands.focus();
+    }
+  }, [isFocused, editor]);
+
   if (!editor) return null;
 
   const { isBold, isItalic, isStrikethrough, isUnderline } = useEditorState({
@@ -105,30 +120,43 @@ function BlockBubbleMenu({ className }: { className: string }) {
 interface BlockProps extends VariantProps<typeof block> {
   lineno: number;
   content: string;
+  isFocused?: boolean;
+  index: number;
+  onFocus?: (index: number) => void;
 }
 
-export function Block({ kind, vcsState, lineno, content }: BlockProps) {
-  const {
-    base,
-    vcs,
-    lineno: linestyle,
-    contents,
-    menu,
-  } = block({ kind, vcsState });
+export const Block = forwardRef<HTMLElement, BlockProps>(
+  ({ kind, vcsState, lineno, content, isFocused, index, onFocus }, ref) => {
+    const {
+      base,
+      vcs,
+      lineno: linestyle,
+      contents,
+      menu,
+    } = block({ kind, vcsState });
 
-  return (
-    <section className={base()}>
-      <span className={vcs()} />
-      <span className={linestyle()}>{lineno}</span>
-      <div className={contents()}>
-        <EditorProvider
-          extensions={extensions}
-          content={content}
-          editorProps={{ attributes: { class: "outline-none" } }}
-        >
-          <BlockBubbleMenu className={menu()} />
-        </EditorProvider>
-      </div>
-    </section>
-  );
-}
+    const handleClick = () => {
+      if (onFocus) {
+        onFocus(index);
+      }
+    };
+
+    return (
+      <section ref={ref} className={base()} onClick={handleClick}>
+        <span className={vcs()} />
+        <span className={linestyle()}>{lineno}</span>
+        <div className={contents()}>
+          <EditorProvider
+            extensions={extensions}
+            content={content}
+            editorProps={{ attributes: { class: "outline-none" } }}
+          >
+            <BlockContent className={menu()} isFocused={isFocused} />
+          </EditorProvider>
+        </div>
+      </section>
+    );
+  }
+);
+
+Block.displayName = "Block";
