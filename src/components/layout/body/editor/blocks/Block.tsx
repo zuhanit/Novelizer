@@ -13,11 +13,11 @@ import {
   Underline as UnderlineIcon,
   Strikethrough,
 } from "lucide-react";
-import { Button } from "../../../ui/Button";
+import { Button } from "../../../../ui/Button";
 
 const extensions = [StarterKit, Underline];
 
-const block = tv({
+export const blockVariants = tv({
   slots: {
     base: "group flex items-center justify-center gap-2.5 w-full",
     vcs: "w-1 h-4 rounded-xs",
@@ -102,19 +102,26 @@ function BlockBubbleMenu({ className }: { className: string }) {
   );
 }
 
-interface BlockProps extends VariantProps<typeof block> {
+export interface BlockProps extends VariantProps<typeof blockVariants> {
   lineno: number;
   content: string;
+  onContentChange?: (content: string) => void;
 }
 
-export function Block({ kind, vcsState, lineno, content }: BlockProps) {
+export function Block({
+  kind,
+  vcsState,
+  lineno,
+  content,
+  onContentChange,
+}: BlockProps) {
   const {
     base,
     vcs,
     lineno: linestyle,
     contents,
     menu,
-  } = block({ kind, vcsState });
+  } = blockVariants({ kind, vcsState });
 
   return (
     <section className={base()}>
@@ -125,6 +132,11 @@ export function Block({ kind, vcsState, lineno, content }: BlockProps) {
           extensions={extensions}
           content={content}
           editorProps={{ attributes: { class: "outline-none" } }}
+          onUpdate={({ editor }) => {
+            if (onContentChange) {
+              onContentChange(editor.getHTML());
+            }
+          }}
         >
           <BlockBubbleMenu className={menu()} />
         </EditorProvider>

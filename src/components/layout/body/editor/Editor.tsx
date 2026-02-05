@@ -1,9 +1,23 @@
 import { tv } from "tailwind-variants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/Tabs";
-import { Block } from "./Block";
 import { Button } from "../../../ui/Button";
 import { X } from "lucide-react";
 import { useEditorStore } from "../../../../stores/useEditorStore";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableBlock } from "./blocks/SortableBlock";
 
 const editorVariants = tv({
   slots: {
@@ -20,16 +34,54 @@ const editorVariants = tv({
     blocks: "flex flex-col items-center w-175 mx-auto",
     empty:
       "flex-1 flex items-center justify-center text-muted-foreground text-sm",
+    blank:
+      "w-full flex items-center justify-center text-muted-foreground opacity-0 hover:opacity-100 transition-opacity py-8 hover:bg-transparent",
   },
 });
 
 export function Editor() {
-  const { base, tabTrigger, content, blocks, empty } = editorVariants();
-  const { openFiles, activeTab, closeFile, setActiveTab } = useEditorStore();
+  const { base, tabTrigger, content, blocks, empty, blank } = editorVariants();
+  const {
+    openFiles,
+    activeTab,
+    closeFile,
+    setActiveTab,
+    addBlock,
+    deleteBlock,
+    reorderBlocks,
+    changeBlockKind,
+    updateBlockContent,
+  } = useEditorStore();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const handleClose = (e: React.MouseEvent, fileId: string) => {
     e.stopPropagation();
     closeFile(fileId);
+  };
+
+  const handleDragEnd = (event: DragEndEvent, fileId: string) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const activeBlockId = active.id.toString();
+      const overBlockId = over.id.toString();
+
+      const file = openFiles.find((f) => f.id === fileId);
+      if (!file) return;
+
+      const oldIndex = file.blocks.findIndex((b) => b.id === activeBlockId);
+      const newIndex = file.blocks.findIndex((b) => b.id === overBlockId);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderBlocks(fileId, oldIndex, newIndex);
+      }
+    }
   };
 
   if (openFiles.length === 0) {
@@ -66,21 +118,51 @@ export function Editor() {
           </TabsTrigger>
         ))}
       </TabsList>
-      {openFiles.map((file) => (
-        <TabsContent key={file.id} value={file.id} className={content()}>
-          <div className={blocks()}>
-            {file.blocks.map((block, idx) => (
-              <Block
-                key={idx}
-                kind={block.kind}
-                vcsState={block.vcsState}
-                lineno={idx + 1}
-                content={block.content}
-              />
-            ))}
-          </div>
-        </TabsContent>
-      ))}
+      {openFiles.map((file) => {
+        const blockIds = file.blocks.map((block) => block.id);
+
+        return (
+          <TabsContent key={file.id} value={file.id} className={content()}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => handleDragEnd(event, file.id)}
+            >
+              <SortableContext
+                items={blockIds}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className={blocks()}>
+                  {file.blocks.map((block, idx) => (
+                    <SortableBlock
+                      key={block.id}
+                      id={block.id}
+                      kind={block.kind}
+                      vcsState={block.vcsState}
+                      lineno={idx + 1}
+                      content={block.content}
+                      onDelete={() => deleteBlock(file.id, block.id)}
+                      onAdd={() => addBlock(file.id, "content", idx + 1)}
+                      onConvert={(kind) =>
+                        changeBlockKind(file.id, block.id, kind)
+                      }
+                      onContentChange={(newContent) =>
+                        updateBlockContent(file.id, block.id, newContent)
+                      }
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <Button
+              className={blank()}
+              onClick={() => addBlock(file.id, "content", blockIds.length + 1)}
+            >
+              블록을 추가하려면 클릭하세요.
+            </Button>
+          </TabsContent>
+        );
+      })}
     </Tabs>
   );
 }
