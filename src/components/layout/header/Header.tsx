@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { LayoutButtons } from "./LayoutButtons";
 import { Title } from "./Title";
 import {
@@ -9,15 +9,16 @@ import {
   BreadcrumbSeparator,
 } from "../../ui/Breadcrumb";
 import { useEditorStore } from "../../../stores/useEditorStore";
-
-const MockTitle = "사건 (01)";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover";
+import { Input } from "../../ui/Input";
 
 export function Header() {
-  const [documentName, setDocumentName] = useState(MockTitle);
   const { openFiles, activeTab } = useEditorStore();
 
+  const activeFile = openFiles.find((file) => file.id === activeTab);
+  const path = activeFile?.path ?? [];
+
   const handleRenameSubmit = (newName: string) => {
-    setDocumentName(newName);
     console.log("Document renamed to:", newName);
     // TODO: Implement actual rename logic with backend
   };
@@ -31,30 +32,30 @@ export function Header() {
       <div className="w-20" />
       {/* Center: Title and Breadcrumbs */}
       <div className="flex items-center flex-col justify-self-center">
-        <Title title={documentName} />
-        <Breadcrumb>
-          <BreadcrumbList>
-            {activeTab &&
-              openFiles
-                .find((file) => file.id === activeTab)
-                ?.path.map((segment, idx, arr) =>
-                  idx + 1 !== arr.length ? (
-                    <>
+        {activeFile && (
+          <>
+            <Title title={activeFile?.fileName} />
+            <Breadcrumb>
+              <BreadcrumbList>
+                {path.map((segment, idx) =>
+                  idx < path.length - 1 ? (
+                    <Fragment key={idx}>
                       <BreadcrumbLink href="">{segment}</BreadcrumbLink>
                       <BreadcrumbSeparator />
-                    </>
+                    </Fragment>
                   ) : (
-                    <BreadcrumbItem
-                      onClick={() => {
-                        console.log("Renaming...");
-                      }}
-                    >
-                      {segment}
+                    <BreadcrumbItem key={idx}>
+                      <RenamableSegment
+                        value={segment}
+                        onRename={handleRenameSubmit}
+                      />
                     </BreadcrumbItem>
                   )
                 )}
-          </BreadcrumbList>
-        </Breadcrumb>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </>
+        )}
       </div>
 
       {/* Right: Layout Buttons */}
@@ -65,32 +66,34 @@ export function Header() {
   );
 }
 
-interface RenameInputProps {
-  initialValue: string;
-  onSubmit: (value: string) => void;
-  onCancel: () => void;
-}
+function RenamableSegment({
+  value,
+  onRename,
+}: {
+  value: string;
+  onRename: (newName: string) => void;
+}) {
+  const [draft, setDraft] = useState(value);
 
-function RenameInput({ initialValue, onSubmit, onCancel }: RenameInputProps) {
-  const [value, setValue] = useState(initialValue);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      onSubmit(value);
-    } else if (e.key === "Escape") {
-      onCancel();
+  const handleSubmit = () => {
+    if (draft.trim()) {
+      onRename(draft);
     }
   };
 
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={() => onSubmit(value)}
-      autoFocus
-      className="text-center bg-transparent border-b border-foreground outline-none px-2 py-1"
-    />
+    <Popover>
+      <PopoverTrigger>{value}</PopoverTrigger>
+      <PopoverContent>
+        <Input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          onBlur={handleSubmit}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
