@@ -14,11 +14,11 @@ import {
   Underline as UnderlineIcon,
   Strikethrough,
 } from "lucide-react";
-import { Button } from "../../../ui/Button";
+import { Button } from "../../../../ui/Button";
 
 const extensions = [StarterKit, Underline];
 
-const block = tv({
+export const blockVariants = tv({
   slots: {
     base: "group flex items-center justify-center gap-2.5 w-full",
     vcs: "w-1 h-4 rounded-xs",
@@ -117,26 +117,41 @@ function BlockContent({
   );
 }
 
-interface BlockProps extends VariantProps<typeof block> {
+export interface BlockProps extends VariantProps<typeof blockVariants> {
   lineno: number;
   content: string;
+  onContentChange?: (content: string) => void;
+  editorProps?: Record<string, unknown>;
   isFocused?: boolean;
-  index: number;
+  index?: number;
   onFocus?: (index: number) => void;
 }
 
 export const Block = forwardRef<HTMLElement, BlockProps>(
-  ({ kind, vcsState, lineno, content, isFocused, index, onFocus }, ref) => {
+  (
+    {
+      kind,
+      vcsState,
+      lineno,
+      content,
+      onContentChange,
+      editorProps: customEditorProps,
+      isFocused,
+      index,
+      onFocus,
+    },
+    ref
+  ) => {
     const {
       base,
       vcs,
       lineno: linestyle,
       contents,
       menu,
-    } = block({ kind, vcsState });
+    } = blockVariants({ kind, vcsState });
 
     const handleClick = () => {
-      if (onFocus) {
+      if (onFocus && index !== undefined) {
         onFocus(index);
       }
     };
@@ -149,7 +164,15 @@ export const Block = forwardRef<HTMLElement, BlockProps>(
           <EditorProvider
             extensions={extensions}
             content={content}
-            editorProps={{ attributes: { class: "outline-none" } }}
+            editorProps={{
+              attributes: { class: "outline-none" },
+              ...customEditorProps,
+            }}
+            onUpdate={({ editor }) => {
+              if (onContentChange) {
+                onContentChange(editor.getHTML());
+              }
+            }}
           >
             <BlockContent className={menu()} isFocused={isFocused} />
           </EditorProvider>
