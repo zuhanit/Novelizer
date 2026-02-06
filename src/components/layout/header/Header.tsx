@@ -1,48 +1,26 @@
 import { useState } from "react";
 import { LayoutButtons } from "./LayoutButtons";
 import { Title } from "./Title";
-import { Breadcrumb, type BreadcrumbItem } from "../../ui/Breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "../../ui/Breadcrumb";
+import { useEditorStore } from "../../../stores/useEditorStore";
 
 const MockTitle = "사건 (01)";
 
 export function Header() {
-  const [isRenaming, setIsRenaming] = useState(false);
   const [documentName, setDocumentName] = useState(MockTitle);
-
-  const handleNavigate = (path: string) => {
-    console.log("Navigating to:", path);
-    // TODO: Implement actual navigation logic with router or state management
-  };
-
-  const handleRename = () => {
-    setIsRenaming(true);
-  };
+  const { openFiles, activeTab } = useEditorStore();
 
   const handleRenameSubmit = (newName: string) => {
     setDocumentName(newName);
-    setIsRenaming(false);
     console.log("Document renamed to:", newName);
     // TODO: Implement actual rename logic with backend
   };
-
-  const MockBreadcrumbs: BreadcrumbItem[] = [
-    {
-      label: "늦은 밤 이야기",
-      onClick: () => handleNavigate("/"),
-    },
-    {
-      label: "전개",
-      onClick: () => handleNavigate("/chapter"),
-    },
-    {
-      label: "발단",
-      onClick: () => handleNavigate("/scene"),
-    },
-    {
-      label: documentName,
-      onClick: handleRename,
-    },
-  ];
 
   return (
     <header
@@ -53,16 +31,30 @@ export function Header() {
       <div className="w-20" />
       {/* Center: Title and Breadcrumbs */}
       <div className="flex items-center flex-col justify-self-center">
-        {isRenaming ? (
-          <RenameInput
-            initialValue={documentName}
-            onSubmit={handleRenameSubmit}
-            onCancel={() => setIsRenaming(false)}
-          />
-        ) : (
-          <Title title={documentName} />
-        )}
-        <Breadcrumb items={MockBreadcrumbs} separator="/" />
+        <Title title={documentName} />
+        <Breadcrumb>
+          <BreadcrumbList>
+            {activeTab &&
+              openFiles
+                .find((file) => file.id === activeTab)
+                ?.path.map((segment, idx, arr) =>
+                  idx + 1 !== arr.length ? (
+                    <>
+                      <BreadcrumbLink href="">{segment}</BreadcrumbLink>
+                      <BreadcrumbSeparator />
+                    </>
+                  ) : (
+                    <BreadcrumbItem
+                      onClick={() => {
+                        console.log("Renaming...");
+                      }}
+                    >
+                      {segment}
+                    </BreadcrumbItem>
+                  )
+                )}
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
 
       {/* Right: Layout Buttons */}
