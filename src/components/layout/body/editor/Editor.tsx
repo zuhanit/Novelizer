@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { tv } from "tailwind-variants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/Tabs";
 import { Button } from "../../../ui/Button";
@@ -11,6 +12,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -18,6 +21,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableBlock } from "./blocks/SortableBlock";
+import { Block } from "./blocks/Block";
 
 const editorVariants = tv({
   slots: {
@@ -41,6 +45,7 @@ const editorVariants = tv({
 
 export function Editor() {
   const { base, tabTrigger, content, blocks, empty, blank } = editorVariants();
+  const [activeId, setActiveId] = useState<string | null>(null);
   const {
     openFiles,
     activeTab,
@@ -65,6 +70,10 @@ export function Editor() {
     closeFile(fileId);
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id.toString());
+  };
+
   const handleDragEnd = (event: DragEndEvent, fileId: string) => {
     const { active, over } = event;
 
@@ -82,6 +91,8 @@ export function Editor() {
         reorderBlocks(fileId, oldIndex, newIndex);
       }
     }
+
+    setActiveId(null);
   };
 
   if (openFiles.length === 0) {
@@ -126,6 +137,7 @@ export function Editor() {
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={(event) => handleDragEnd(event, file.id)}
             >
               <SortableContext
@@ -153,6 +165,27 @@ export function Editor() {
                   ))}
                 </div>
               </SortableContext>
+              <DragOverlay>
+                {activeId
+                  ? (() => {
+                      const block = file.blocks.find((b) => b.id === activeId);
+                      const idx = file.blocks.findIndex(
+                        (b) => b.id === activeId
+                      );
+                      if (!block) return null;
+                      return (
+                        <div className="w-175 opacity-50">
+                          <Block
+                            kind={block.kind}
+                            vcsState={block.vcsState}
+                            lineno={idx + 1}
+                            content={block.content}
+                          />
+                        </div>
+                      );
+                    })()
+                  : null}
+              </DragOverlay>
             </DndContext>
             <Button
               className={blank()}
