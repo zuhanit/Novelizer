@@ -11,7 +11,14 @@ export function BreadcrumbItem({
   ...props
 }: React.ComponentProps<"li">) {
   return (
-    <li data-slot="breadcrumb-item" className={cn("", className)} {...props} />
+    <li
+      data-slot="breadcrumb-item"
+      className={cn(
+        "inline-flex items-center gap-1.5 wrap-break-word",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -41,7 +48,7 @@ export function BreadcrumbLink({
   return (
     <Comp
       data-slot="breadcrumb-link"
-      className={cn("", className)}
+      className={cn("hover:text-foreground transition-colors", className)}
       {...props}
     />
   );
@@ -57,7 +64,7 @@ export function BreadcrumbPage({
       role="link"
       aria-disabled="true"
       aria-current="page"
-      className={cn("", className)}
+      className={cn("text-foreground", className)}
       {...props}
     />
   );
