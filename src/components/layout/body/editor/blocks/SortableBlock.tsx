@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Block, BlockProps } from "./Block";
@@ -15,17 +15,25 @@ interface SortableBlockProps extends BlockProps {
   onConvert: (kind: BlockKind) => void;
 }
 
-export function SortableBlock({
-  id,
-  kind,
-  vcsState,
-  lineno,
-  content,
-  onDelete,
-  onAdd,
-  onConvert,
-  onContentChange,
-}: SortableBlockProps) {
+export const SortableBlock = forwardRef<HTMLElement, SortableBlockProps>(
+  (
+    {
+      id,
+      kind,
+      vcsState,
+      lineno,
+      content,
+      onDelete,
+      onAdd,
+      onConvert,
+      onContentChange,
+      isFocused,
+      index,
+      onFocus,
+      editorProps,
+    },
+    ref
+  ) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const {
@@ -82,10 +90,14 @@ export function SortableBlock({
           />
         </div>
         <Block
+          ref={ref}
           kind={kind}
           vcsState={vcsState}
           lineno={lineno}
           content={content}
+          isFocused={isFocused}
+          index={index}
+          onFocus={onFocus}
           onContentChange={onContentChange}
           editorProps={{
             handleKeyDown: (_view: unknown, event: KeyboardEvent) => {
@@ -100,9 +112,12 @@ export function SortableBlock({
 
               return false;
             },
+            ...editorProps,
           }}
         />
       </div>
     </div>
   );
-}
+});
+
+SortableBlock.displayName = "SortableBlock";

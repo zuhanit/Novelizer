@@ -2,20 +2,23 @@ import { create } from "zustand";
 
 export type BlockKind = "content" | "memo";
 
+export type Block = {
+  id: string;
+  kind: BlockKind;
+  vcsState: "default" | "modified" | "added" | "removed";
+  content: string;
+};
+
 export interface FileTab {
   id: string;
   fileName: string;
-  blocks: {
-    id: string;
-    kind: BlockKind;
-    vcsState: "default" | "modified" | "added" | "removed";
-    content: string;
-  }[];
+  blocks: Block[];
 }
 
 interface EditorState {
   openFiles: FileTab[];
   activeTab: string | null;
+  focusedBlockIndex: number | null;
   openFile: (file: FileTab) => void;
   closeFile: (fileId: string) => void;
   setActiveTab: (fileId: string) => void;
@@ -32,11 +35,14 @@ interface EditorState {
     blockId: string,
     kind: BlockKind
   ) => void;
+  setFocusedBlock: (index: number) => void;
+  getActiveFile: () => FileTab | null;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   openFiles: [],
   activeTab: null,
+  focusedBlockIndex: null,
 
   openFile: (file) => {
     const { openFiles } = get();
@@ -173,5 +179,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
 
     set({ openFiles: newOpenFiles });
+  },
+
+  setFocusedBlock: (index) => {
+    set({ focusedBlockIndex: index });
+  },
+
+  getActiveFile: () => {
+    const { openFiles, activeTab } = get();
+    return openFiles.find((f) => f.id === activeTab) ?? null;
   },
 }));

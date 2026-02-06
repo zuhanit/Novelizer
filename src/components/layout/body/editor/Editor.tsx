@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { tv } from "tailwind-variants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/Tabs";
 import { Button } from "../../../ui/Button";
@@ -56,7 +56,10 @@ export function Editor() {
     reorderBlocks,
     changeBlockKind,
     updateBlockContent,
+    focusedBlockIndex,
+    setFocusedBlock,
   } = useEditorStore();
+  const blockRefs = useRef<(HTMLElement | null)[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -94,6 +97,16 @@ export function Editor() {
 
     setActiveId(null);
   };
+
+  // Scroll to focused block when focusedBlockIndex changes
+  useEffect(() => {
+    if (focusedBlockIndex !== null && blockRefs.current[focusedBlockIndex]) {
+      blockRefs.current[focusedBlockIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [focusedBlockIndex]);
 
   if (openFiles.length === 0) {
     return (
@@ -148,11 +161,17 @@ export function Editor() {
                   {file.blocks.map((block, idx) => (
                     <SortableBlock
                       key={block.id}
+                      ref={(el) => {
+                        blockRefs.current[idx] = el;
+                      }}
                       id={block.id}
                       kind={block.kind}
                       vcsState={block.vcsState}
                       lineno={idx + 1}
                       content={block.content}
+                      isFocused={focusedBlockIndex === idx}
+                      index={idx}
+                      onFocus={setFocusedBlock}
                       onDelete={() => deleteBlock(file.id, block.id)}
                       onAdd={() => addBlock(file.id, "content", idx + 1)}
                       onConvert={(kind) =>
