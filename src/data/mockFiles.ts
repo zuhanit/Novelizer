@@ -5,6 +5,7 @@ export const mockFiles: Record<string, FileTab> = {
   characters: {
     id: "characters",
     fileName: "인물",
+    path: ["책과 시간", "인물"],
     blocks: [
       {
         kind: "memo",
@@ -41,6 +42,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-minsu": {
     id: "char-minsu",
     fileName: "민수",
+    path: ["책과 시간", "인물", "민수"],
     blocks: [
       {
         kind: "memo",
@@ -76,6 +78,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-sujin": {
     id: "char-sujin",
     fileName: "수진",
+    path: ["책과 시간", "인물", "수진"],
     blocks: [
       {
         kind: "memo",
@@ -106,6 +109,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-yerin": {
     id: "char-yerin",
     fileName: "예린",
+    path: ["책과 시간", "인물", "예린"],
     blocks: [
       {
         kind: "memo",
@@ -131,6 +135,7 @@ export const mockFiles: Record<string, FileTab> = {
   events: {
     id: "events",
     fileName: "사건",
+    path: ["책과 시간", "사건"],
     blocks: [
       {
         kind: "memo",
@@ -167,6 +172,7 @@ export const mockFiles: Record<string, FileTab> = {
   "event-poem-purchase": {
     id: "event-poem-purchase",
     fileName: "시집 구매 시도",
+    path: ["책과 시간", "사건", "시집 구매 시도"],
     blocks: [
       {
         kind: "memo",
@@ -197,6 +203,7 @@ export const mockFiles: Record<string, FileTab> = {
   "event-gift": {
     id: "event-gift",
     fileName: "시집 선물",
+    path: ["책과 시간", "사건", "시집 선물"],
     blocks: [
       {
         kind: "memo",
@@ -228,6 +235,7 @@ export const mockFiles: Record<string, FileTab> = {
   structure: {
     id: "structure",
     fileName: "구성 요소",
+    path: ["책과 시간", "구성 요소"],
     blocks: [
       {
         kind: "memo",
@@ -266,6 +274,7 @@ export const mockFiles: Record<string, FileTab> = {
   intro: {
     id: "intro",
     fileName: "발단",
+    path: ["책과 시간", "구성 요소", "발단"],
     blocks: [
       {
         kind: "memo",
@@ -290,6 +299,7 @@ export const mockFiles: Record<string, FileTab> = {
   "intro-01": {
     id: "intro-01",
     fileName: "(01)",
+    path: ["책과 시간", "구성 요소", "발단", "(01)"],
     blocks: [
       {
         kind: "memo",
@@ -327,6 +337,7 @@ export const mockFiles: Record<string, FileTab> = {
   development: {
     id: "development",
     fileName: "전개",
+    path: ["책과 시간", "구성 요소", "전개"],
     blocks: [
       {
         kind: "memo",
@@ -351,6 +362,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-01": {
     id: "development-01",
     fileName: "(01)",
+    path: ["책과 시간", "구성 요소", "전개", "(01)"],
     blocks: [
       {
         kind: "memo",
@@ -393,6 +405,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-02": {
     id: "development-02",
     fileName: "(02)",
+    path: ["책과 시간", "구성 요소", "전개", "(02)"],
     blocks: [
       {
         kind: "memo",
@@ -429,6 +442,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-03": {
     id: "development-03",
     fileName: "(03)",
+    path: ["책과 시간", "구성 요소", "전개", "(03)"],
     blocks: [
       {
         kind: "memo",
@@ -466,6 +480,7 @@ export const mockFiles: Record<string, FileTab> = {
   crisis: {
     id: "crisis",
     fileName: "위기",
+    path: ["책과 시간", "구성 요소", "위기"],
     blocks: [
       {
         kind: "memo",
@@ -491,6 +506,7 @@ export const mockFiles: Record<string, FileTab> = {
   climax: {
     id: "climax",
     fileName: "절정",
+    path: ["책과 시간", "구성 요소", "절정"],
     blocks: [
       {
         kind: "memo",
@@ -516,6 +532,7 @@ export const mockFiles: Record<string, FileTab> = {
   ending: {
     id: "ending",
     fileName: "결말",
+    path: ["책과 시간", "구성 요소", "결말"],
     blocks: [
       {
         kind: "memo",

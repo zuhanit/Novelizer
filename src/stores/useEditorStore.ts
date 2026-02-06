@@ -5,6 +5,7 @@ export type BlockKind = "content" | "memo";
 export interface FileTab {
   id: string;
   fileName: string;
+  path: string[];
   blocks: {
     kind: BlockKind;
     vcsState: "default" | "modified" | "added" | "removed";
