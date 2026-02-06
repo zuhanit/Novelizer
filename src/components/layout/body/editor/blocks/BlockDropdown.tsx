@@ -28,6 +28,8 @@ interface BlockDropdownProps {
   onConvert: (kind: BlockKind) => void;
   onAdd: () => void;
   onDelete: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function BlockDropdown({
@@ -35,9 +37,11 @@ export function BlockDropdown({
   onConvert,
   onAdd,
   onDelete,
+  open,
+  onOpenChange,
 }: BlockDropdownProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button aria-label="Block options">
           <Ellipsis size={16} className="text-muted-foreground" />
@@ -70,7 +74,7 @@ export function BlockDropdown({
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onAdd}>
             <Plus size={16} /> 추가
-            <DropdownMenuShortcut>Add</DropdownMenuShortcut>
+            <DropdownMenuShortcut>↵</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onDelete}>
             <Trash2 size={16} />

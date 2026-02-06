@@ -106,6 +106,7 @@ export interface BlockProps extends VariantProps<typeof blockVariants> {
   lineno: number;
   content: string;
   onContentChange?: (content: string) => void;
+  editorProps?: Record<string, unknown>;
 }
 
 export function Block({
@@ -114,6 +115,7 @@ export function Block({
   lineno,
   content,
   onContentChange,
+  editorProps: customEditorProps,
 }: BlockProps) {
   const {
     base,
@@ -131,7 +133,10 @@ export function Block({
         <EditorProvider
           extensions={extensions}
           content={content}
-          editorProps={{ attributes: { class: "outline-none" } }}
+          editorProps={{
+            attributes: { class: "outline-none" },
+            ...customEditorProps,
+          }}
           onUpdate={({ editor }) => {
             if (onContentChange) {
               onContentChange(editor.getHTML());
