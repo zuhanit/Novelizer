@@ -12,6 +12,7 @@ export type Block = {
 export interface FileTab {
   id: string;
   fileName: string;
+  path: string[];
   blocks: Block[];
 }
 
@@ -30,11 +31,7 @@ interface EditorState {
     blockId: string,
     content: string
   ) => void;
-  changeBlockKind: (
-    fileId: string,
-    blockId: string,
-    kind: BlockKind
-  ) => void;
+  changeBlockKind: (fileId: string, blockId: string, kind: BlockKind) => void;
   setFocusedBlock: (index: number) => void;
   getActiveFile: () => FileTab | null;
 }

@@ -5,6 +5,7 @@ export const mockFiles: Record<string, FileTab> = {
   characters: {
     id: "characters",
     fileName: "인물",
+    path: ["책과 시간", "인물"],
     blocks: [
       {
         id: "0158c69c-f434-40e9-b983-ef83bfcde65d",
@@ -46,6 +47,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-minsu": {
     id: "char-minsu",
     fileName: "민수",
+    path: ["책과 시간", "인물", "민수"],
     blocks: [
       {
         id: "1c0ee9f1-e0aa-49e1-8032-11c5b0b4974b",
@@ -86,6 +88,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-sujin": {
     id: "char-sujin",
     fileName: "수진",
+    path: ["책과 시간", "인물", "수진"],
     blocks: [
       {
         id: "89c6fa8c-b8e7-4d05-a987-1703cef622d4",
@@ -120,6 +123,7 @@ export const mockFiles: Record<string, FileTab> = {
   "char-yerin": {
     id: "char-yerin",
     fileName: "예린",
+    path: ["책과 시간", "인물", "예린"],
     blocks: [
       {
         id: "59224b75-4c91-473b-bff5-ccbfb63764f3",
@@ -148,6 +152,7 @@ export const mockFiles: Record<string, FileTab> = {
   events: {
     id: "events",
     fileName: "사건",
+    path: ["책과 시간", "사건"],
     blocks: [
       {
         id: "b139fcbb-b3c4-4f68-a32f-3477da6d38dc",
@@ -189,6 +194,7 @@ export const mockFiles: Record<string, FileTab> = {
   "event-poem-purchase": {
     id: "event-poem-purchase",
     fileName: "시집 구매 시도",
+    path: ["책과 시간", "사건", "시집 구매 시도"],
     blocks: [
       {
         id: "131d34eb-8f68-4e3d-a346-056aba9e6765",
@@ -223,6 +229,7 @@ export const mockFiles: Record<string, FileTab> = {
   "event-gift": {
     id: "event-gift",
     fileName: "시집 선물",
+    path: ["책과 시간", "사건", "시집 선물"],
     blocks: [
       {
         id: "2cc91f6f-d719-4f56-ae19-d4d9786a6ab0",
@@ -258,6 +265,7 @@ export const mockFiles: Record<string, FileTab> = {
   structure: {
     id: "structure",
     fileName: "구성 요소",
+    path: ["책과 시간", "구성 요소"],
     blocks: [
       {
         id: "28082c2d-3d2e-4aa6-9b4e-a54ca7ce839a",
@@ -302,6 +310,7 @@ export const mockFiles: Record<string, FileTab> = {
   intro: {
     id: "intro",
     fileName: "발단",
+    path: ["책과 시간", "구성 요소", "발단"],
     blocks: [
       {
         id: "c590e4d2-733d-4967-a2d4-55ee256bb072",
@@ -329,6 +338,7 @@ export const mockFiles: Record<string, FileTab> = {
   "intro-01": {
     id: "intro-01",
     fileName: "(01)",
+    path: ["책과 시간", "구성 요소", "발단", "(01)"],
     blocks: [
       {
         id: "33131992-03b1-440f-ad12-76c48c5ed9a2",
@@ -371,6 +381,7 @@ export const mockFiles: Record<string, FileTab> = {
   development: {
     id: "development",
     fileName: "전개",
+    path: ["책과 시간", "구성 요소", "전개"],
     blocks: [
       {
         id: "6c55ddd4-d2e2-4bc7-8417-2bad2e332426",
@@ -398,6 +409,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-01": {
     id: "development-01",
     fileName: "(01)",
+    path: ["책과 시간", "구성 요소", "전개", "(01)"],
     blocks: [
       {
         id: "a0653080-bbcb-4c40-9f8f-978d58958e5d",
@@ -446,6 +458,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-02": {
     id: "development-02",
     fileName: "(02)",
+    path: ["책과 시간", "구성 요소", "전개", "(02)"],
     blocks: [
       {
         id: "510e7868-bf48-4dca-8fb9-4312dc589692",
@@ -487,6 +500,7 @@ export const mockFiles: Record<string, FileTab> = {
   "development-03": {
     id: "development-03",
     fileName: "(03)",
+    path: ["책과 시간", "구성 요소", "전개", "(03)"],
     blocks: [
       {
         id: "63e0051d-cc5a-4247-8f8c-47b7fcf1e772",
@@ -529,6 +543,7 @@ export const mockFiles: Record<string, FileTab> = {
   crisis: {
     id: "crisis",
     fileName: "위기",
+    path: ["책과 시간", "구성 요소", "위기"],
     blocks: [
       {
         id: "75430346-3a76-4bcc-a351-d6a5c8da2222",
@@ -557,6 +572,7 @@ export const mockFiles: Record<string, FileTab> = {
   climax: {
     id: "climax",
     fileName: "절정",
+    path: ["책과 시간", "구성 요소", "절정"],
     blocks: [
       {
         id: "e62b0936-903f-4c67-975d-4589b3ff12d5",
@@ -585,6 +601,7 @@ export const mockFiles: Record<string, FileTab> = {
   ending: {
     id: "ending",
     fileName: "결말",
+    path: ["책과 시간", "구성 요소", "결말"],
     blocks: [
       {
         id: "692f5dff-07f1-4018-9d5b-41ae46952bfe",
