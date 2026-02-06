@@ -39,10 +39,10 @@ export function Header() {
               <BreadcrumbList>
                 {path.map((segment, idx) =>
                   idx < path.length - 1 ? (
-                    <Fragment key={idx}>
+                    <BreadcrumbItem key={idx}>
                       <BreadcrumbLink href="">{segment}</BreadcrumbLink>
                       <BreadcrumbSeparator />
-                    </Fragment>
+                    </BreadcrumbItem>
                   ) : (
                     <BreadcrumbItem key={idx}>
                       <RenamableSegment
