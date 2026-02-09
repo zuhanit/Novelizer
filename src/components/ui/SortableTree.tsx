@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -20,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronRight } from "lucide-react";
 
-import { treeVariants, type TreeProps, type SortableTreeNode } from "./Tree";
+import { treeVariants, type SortableTreeNode } from "./Tree";
 import TreeBranchIcon from "../../assets/tree/tree-branch.svg";
 import TreeCornerIcon from "../../assets/tree/tree-corner.svg";
 import TreeLineIcon from "../../assets/tree/tree-line.svg";
@@ -28,21 +28,21 @@ import { Button } from "./Button";
 
 // --- flattenTree ---
 
-interface FlatNode extends SortableTreeNode {
+interface FlatNode<T> extends SortableTreeNode<T> {
   depth: number;
   parentId: string | null;
   isLast: boolean;
 }
 
-function flattenTree(
-  items: SortableTreeNode[],
+function flattenTree<T>(
+  items: SortableTreeNode<T>[],
   collapsedIds: Set<string>,
   depth = 1,
   parentId: string | null = null
-): FlatNode[] {
+): FlatNode<T>[] {
   return items.flatMap((node, index) => {
     const isLast = index === items.length - 1;
-    const flat: FlatNode = { ...node, depth, parentId, isLast };
+    const flat: FlatNode<T> = { ...node, depth, parentId, isLast };
     const isFolder = Boolean(node.children?.length);
     const isCollapsed = collapsedIds.has(node.id);
 
@@ -56,9 +56,48 @@ function flattenTree(
   });
 }
 
-// --- SortableTree ---
+// --- SortableTreeProps ---
 
-export function SortableTree({ items, label }: TreeProps<SortableTreeNode>) {
+export interface SortableTreeProps<T> {
+  /** Array of root-level tree nodes with IDs for drag-and-drop */
+  items: SortableTreeNode<T>[];
+  /** Accessibility label for the tree */
+  label: string;
+  /** Optional callback when a node is clicked */
+  onNodeClick?: (node: SortableTreeNode<T>) => void;
+  /** Optional render function for custom actions per node */
+  renderActions?: (node: SortableTreeNode<T>) => ReactNode;
+  /** Optional callback when drag ends - receives active and over node IDs */
+  onDragEnd?: (activeId: string, overId: string) => void;
+}
+
+/**
+ * SortableTree component - Renders a hierarchical tree with drag-and-drop support
+ *
+ * @example
+ * ```tsx
+ * const items = [
+ *   { id: "1", label: "Folder", data: {...}, children: [
+ *     { id: "2", label: "File", data: {...} }
+ *   ]}
+ * ];
+ *
+ * <SortableTree
+ *   items={items}
+ *   label="File Explorer"
+ *   onNodeClick={(node) => console.log(node.data)}
+ *   renderActions={(node) => <Button>+</Button>}
+ *   onDragEnd={(activeId, overId) => reorderNodes(activeId, overId)}
+ * />
+ * ```
+ */
+export function SortableTree<T>({
+  items,
+  label,
+  onNodeClick,
+  renderActions,
+  onDragEnd,
+}: SortableTreeProps<T>) {
   const [treeItems] = useState(items);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -84,7 +123,7 @@ export function SortableTree({ items, label }: TreeProps<SortableTreeNode>) {
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
     if (!over || active.id === over.id) return;
-    // TODO: 순서 변경 로직
+    onDragEnd?.(active.id as string, over.id as string);
   };
 
   const handleDragCancel = () => {
@@ -121,6 +160,8 @@ export function SortableTree({ items, label }: TreeProps<SortableTreeNode>) {
               node={node}
               isCollapsed={collapsedIds.has(node.id)}
               onToggle={handleToggle}
+              onNodeClick={onNodeClick}
+              renderActions={renderActions}
             />
           ))}
         </ul>
@@ -137,17 +178,21 @@ export function SortableTree({ items, label }: TreeProps<SortableTreeNode>) {
 
 // --- SortableTreeItem ---
 
-interface SortableTreeItemProps {
-  node: FlatNode;
+interface SortableTreeItemProps<T> {
+  node: FlatNode<T>;
   isCollapsed: boolean;
   onToggle: (id: string) => void;
+  onNodeClick?: (node: SortableTreeNode<T>) => void;
+  renderActions?: (node: SortableTreeNode<T>) => ReactNode;
 }
 
-function SortableTreeItem({
+function SortableTreeItem<T>({
   node,
   isCollapsed,
   onToggle,
-}: SortableTreeItemProps) {
+  onNodeClick,
+  renderActions,
+}: SortableTreeItemProps<T>) {
   const {
     attributes,
     listeners,
@@ -173,7 +218,7 @@ function SortableTreeItem({
   const isFolder = Boolean(node.children?.length);
 
   const handleClick = () => {
-    node.onSelect?.();
+    onNodeClick?.(node);
   };
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -185,7 +230,7 @@ function SortableTreeItem({
     <li
       ref={setNodeRef}
       aria-level={node.depth}
-      aria-expanded={isFolder ? undefined : undefined}
+      aria-expanded={isFolder ? !isCollapsed : undefined}
       className={item()}
       style={style}
       data-dragging={isDragging || undefined}
@@ -225,13 +270,15 @@ function SortableTreeItem({
       {node.icon && <span className={iconClass()}>{node.icon}</span>}
 
       <span className={labelClass()}>{node.label}</span>
+
+      {renderActions && renderActions(node)}
     </li>
   );
 }
 
 // --- DragOverlayItem ---
 
-function DragOverlayItem({ node }: { node: FlatNode }) {
+function DragOverlayItem<T>({ node }: { node: FlatNode<T> }) {
   const { item, icon: iconClass, label: labelClass } = treeVariants();
 
   return (

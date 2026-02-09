@@ -1,11 +1,14 @@
+import { useCallback } from "react";
 import { Sidebar } from "../../../ui/Sidebar";
-import { File, GitBranch, Search } from "lucide-react";
+import { File, GitBranch, Search, Plus } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "../../../ui/ToggleGroup";
 import { tv } from "tailwind-variants";
 import { type SortableTreeNode } from "../../../ui/Tree";
 import { SortableTree } from "../../../ui/SortableTree";
 import { useEditorStore } from "../../../../stores/useEditorStore";
-import { mockFiles } from "../../../../data/mockFiles";
+import { useProjectStore } from "../../../../stores/useProjectStore";
+import type { Node, FileMetadata } from "../../../../types/rust/bindings";
+import { Button } from "../../../ui/Button";
 
 const leftSidebar = tv({
   slots: {
@@ -15,120 +18,67 @@ const leftSidebar = tv({
   },
 });
 
+/**
+ * Converts Rust Node<FileMetadata> to SortableTreeNode<FileMetadata>
+ * Business logic removed - this is now just data transformation
+ */
+function fileNodeToSortable(
+  node: Node<FileMetadata>
+): SortableTreeNode<FileMetadata> {
+  return {
+    id: node.data.path,
+    label: node.data.name,
+    data: node.data,
+    children: node.children?.map((child: Node<FileMetadata>) => fileNodeToSortable(child)),
+  };
+}
+
 export function LeftSidebar() {
   const { base, categories, contents } = leftSidebar();
   const openFile = useEditorStore((state) => state.openFile);
+  const tree = useProjectStore((state) => state.tree);
+  const createDocument = useProjectStore((state) => state.createDocument);
 
-  const handleFileSelect = (fileId: string) => {
-    const file = mockFiles[fileId];
-    if (file) {
-      openFile(file);
-    }
-  };
-
-  const treeItems: SortableTreeNode[] = [
-    {
-      id: "story-1",
-      label: "책과 시간",
-      children: [
-        {
-          id: "characters",
-          label: "인물",
-          onSelect: () => handleFileSelect("characters"),
-          children: [
-            {
-              id: "char-minsu",
-              label: "민수",
-              onSelect: () => handleFileSelect("char-minsu"),
-            },
-            {
-              id: "char-sujin",
-              label: "수진",
-              onSelect: () => handleFileSelect("char-sujin"),
-            },
-            {
-              id: "char-yerin",
-              label: "예린",
-              onSelect: () => handleFileSelect("char-yerin"),
-            },
-          ],
-        },
-        {
-          id: "events",
-          label: "사건",
-          onSelect: () => handleFileSelect("events"),
-          children: [
-            {
-              id: "event-poem-purchase",
-              label: "시집 구매 시도",
-              onSelect: () => handleFileSelect("event-poem-purchase"),
-            },
-            {
-              id: "event-gift",
-              label: "시집 선물",
-              onSelect: () => handleFileSelect("event-gift"),
-            },
-          ],
-        },
-        {
-          id: "structure",
-          label: "구성 요소",
-          onSelect: () => handleFileSelect("structure"),
-          children: [
-            {
-              id: "intro",
-              label: "발단",
-              onSelect: () => handleFileSelect("intro"),
-              children: [
-                {
-                  id: "intro-01",
-                  label: "(01)",
-                  onSelect: () => handleFileSelect("intro-01"),
-                },
-              ],
-            },
-            {
-              id: "development",
-              label: "전개",
-              onSelect: () => handleFileSelect("development"),
-              children: [
-                {
-                  id: "development-01",
-                  label: "(01)",
-                  onSelect: () => handleFileSelect("development-01"),
-                },
-                {
-                  id: "development-02",
-                  label: "(02)",
-                  onSelect: () => handleFileSelect("development-02"),
-                },
-                {
-                  id: "development-03",
-                  label: "(03)",
-                  onSelect: () => handleFileSelect("development-03"),
-                },
-              ],
-            },
-            {
-              id: "crisis",
-              label: "위기",
-              onSelect: () => handleFileSelect("crisis"),
-            },
-            {
-              id: "climax",
-              label: "절정",
-              onSelect: () => handleFileSelect("climax"),
-            },
-            {
-              id: "ending",
-              label: "결말",
-              onSelect: () => handleFileSelect("ending"),
-            },
-          ],
-        },
-      ],
+  // Business logic handlers at component level
+  const handleNodeClick = useCallback(
+    (node: SortableTreeNode<FileMetadata>) => {
+      // TODO: Load document content and open in editor
+      console.log("Open file:", node.data.path);
     },
-  ];
+    [openFile]
+  );
+
+  const handleCreateChild = useCallback(
+    (node: SortableTreeNode<FileMetadata>) => {
+      const parentNode: Node<FileMetadata> = {
+        data: node.data,
+        children: [],
+      };
+      createDocument(parentNode, "New Document");
+    },
+    [createDocument]
+  );
+
+  // Render actions for each node
+  const renderActions = useCallback(
+    (node: SortableTreeNode<FileMetadata>) => (
+      <Button
+        size="sm"
+        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleCreateChild(node);
+        }}
+      >
+        <Plus size={12} />
+      </Button>
+    ),
+    [handleCreateChild]
+  );
+
+  // Transform data
+  const treeItems: SortableTreeNode<FileMetadata>[] =
+    tree.length > 0 ? tree.map((node: Node<FileMetadata>) => fileNodeToSortable(node)) : [];
 
   return (
     <Sidebar id="left" className={base()}>
@@ -158,7 +108,12 @@ export function LeftSidebar() {
         </ToggleGroup>
       </section>
       <section className={contents()}>
-        <SortableTree items={treeItems} label="파일 탐색기" />
+        <SortableTree
+          items={treeItems}
+          label="파일 탐색기"
+          onNodeClick={handleNodeClick}
+          renderActions={renderActions}
+        />
       </section>
     </Sidebar>
   );

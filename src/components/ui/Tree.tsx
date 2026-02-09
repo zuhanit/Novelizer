@@ -9,31 +9,76 @@ import TreeLineIcon from "../../assets/tree/tree-line.svg";
 export const treeVariants = tv({
   slots: {
     root: "list-none p-0 m-0",
-    item: "px-2.5 h-6 flex items-center gap-1 cursor-pointer hover:bg-ui-selection-normal rounded-sm transition-colors",
+    item: "group px-2.5 h-6 flex items-center gap-1 cursor-pointer hover:bg-ui-selection-normal rounded-sm transition-colors",
     connector: "w-4 shrink-0",
-    expandIcon: "w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-150",
+    expandIcon:
+      "w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-150",
     icon: "w-4 h-4 shrink-0",
     label: "text-xs text-muted-foreground",
     group: "list-none p-0 m-0",
   },
 });
 
-export interface TreeNode {
+/**
+ * TreeNode interface - Purely structural, no business logic
+ * @template T - The type of data stored in each node
+ */
+export interface TreeNode<T> {
+  /** Display label for the node */
   label: string;
+  /** Optional icon to display before the label */
   icon?: ReactNode;
+  /** Whether the node should be expanded by default */
   defaultExpanded?: boolean;
-  onSelect?: () => void;
-  children?: TreeNode[];
+  /** Child nodes */
+  children?: TreeNode<T>[];
+  /** Arbitrary data payload */
+  data: T;
 }
 
-export type SortableTreeNode = TreeNode & { id: string; children?: SortableTreeNode[] };
+/**
+ * SortableTreeNode extends TreeNode with an ID for drag-and-drop operations
+ */
+export type SortableTreeNode<T> = TreeNode<T> & {
+  id: string;
+  children?: SortableTreeNode<T>[];
+};
 
+/**
+ * TreeProps - Configuration for Tree component
+ * @template T - The type of data stored in each node
+ */
 export interface TreeProps<T> {
-  items: T[];
+  /** Array of root-level tree nodes */
+  items: TreeNode<T>[];
+  /** Accessibility label for the tree */
   label: string;
+  /** Optional callback when a node is clicked */
+  onNodeClick?: (node: TreeNode<T>) => void;
+  /** Optional render function for custom actions per node */
+  renderActions?: (node: TreeNode<T>) => ReactNode;
 }
 
-export function Tree({ items, label }: TreeProps<TreeNode>) {
+/**
+ * Tree component - Renders a hierarchical tree structure
+ *
+ * @example
+ * ```tsx
+ * const items = [
+ *   { label: "Folder", data: {...}, children: [
+ *     { label: "File", data: {...} }
+ *   ]}
+ * ];
+ *
+ * <Tree
+ *   items={items}
+ *   label="File Explorer"
+ *   onNodeClick={(node) => console.log(node.data)}
+ *   renderActions={(node) => <Button>+</Button>}
+ * />
+ * ```
+ */
+export function Tree<T>({ items, label, onNodeClick, renderActions }: TreeProps<T>) {
   const { root } = treeVariants();
 
   return (
@@ -44,19 +89,29 @@ export function Tree({ items, label }: TreeProps<TreeNode>) {
           node={node}
           depth={1}
           isLast={index === items.length - 1}
+          onNodeClick={onNodeClick}
+          renderActions={renderActions}
         />
       ))}
     </ul>
   );
 }
 
-interface TreeItemProps {
-  node: TreeNode;
+interface TreeItemProps<T> {
+  node: TreeNode<T>;
   depth: number;
   isLast: boolean;
+  onNodeClick?: (node: TreeNode<T>) => void;
+  renderActions?: (node: TreeNode<T>) => ReactNode;
 }
 
-export function TreeItem({ node, depth, isLast }: TreeItemProps) {
+export function TreeItem<T>({
+  node,
+  depth,
+  isLast,
+  onNodeClick,
+  renderActions,
+}: TreeItemProps<T>) {
   const [isExpanded, setIsExpanded] = useState(node.defaultExpanded ?? false);
   const {
     item,
@@ -73,7 +128,7 @@ export function TreeItem({ node, depth, isLast }: TreeItemProps) {
     if (isFolder) {
       setIsExpanded(!isExpanded);
     }
-    node.onSelect?.();
+    onNodeClick?.(node);
   };
 
   return (
@@ -116,6 +171,8 @@ export function TreeItem({ node, depth, isLast }: TreeItemProps) {
         {node.icon && <span className={iconClass()}>{node.icon}</span>}
 
         <span className={labelClass()}>{node.label}</span>
+
+        {renderActions && renderActions(node)}
       </li>
 
       {isFolder && isExpanded && (
@@ -126,6 +183,8 @@ export function TreeItem({ node, depth, isLast }: TreeItemProps) {
               node={child}
               depth={depth + 1}
               isLast={index === node.children!.length - 1}
+              onNodeClick={onNodeClick}
+              renderActions={renderActions}
             />
           ))}
         </ul>
