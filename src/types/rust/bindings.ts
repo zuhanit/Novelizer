@@ -5,8 +5,37 @@
 
 
 export const commands = {
-async add(a: number, b: number) : Promise<number> {
-    return await TAURI_INVOKE("add", { a, b });
+async openProject(path: string) : Promise<Result<Node<FileMetadata>[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("open_project", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async createProject(path: string) : Promise<Result<Node<FileMetadata>[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("create_project", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async createDocument(parent: Node<FileMetadata>, name: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("create_document", { parent, name }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async renameDocument(document: Document, newName: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("rename_document", { document, newName }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -20,7 +49,11 @@ async add(a: number, b: number) : Promise<number> {
 
 /** user-defined types **/
 
-
+export type Block = { id: string; kind: BlockKind; content: string }
+export type BlockKind = "Content" | "Memo"
+export type Document = { id: string; name: string; blocks: Block[]; path: string }
+export type FileMetadata = { path: string; name: string }
+export type Node<T> = { children: Node<T>[]; data: T }
 
 /** tauri-specta globals **/
 

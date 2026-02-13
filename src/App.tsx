@@ -4,8 +4,16 @@ import { Panel } from "./components/layout/footer/Panel";
 import { StatusBar } from "./components/layout/footer/StatusBar";
 import { Header } from "./components/layout/header/Header";
 import { SidebarProvider } from "./components/ui/Sidebar";
+import { useProjectStore } from "./stores/useProjectStore";
+import { ProjectSelector } from "./components/ProjectSelector";
 
 function App() {
+  const isLoaded = useProjectStore((s) => s.isLoaded);
+
+  if (!isLoaded) {
+    return <ProjectSelector />;
+  }
+
   return (
     <>
       <SidebarProvider>
