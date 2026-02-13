@@ -1,26 +1,22 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod commands;
+mod models;
+
+use std::sync::Mutex;
 
 use specta_typescript::Typescript;
+use tauri::Manager;
 use tauri_specta::{collect_commands, Builder};
 
-#[tauri::command]
-#[specta::specta]
-fn greet(name: &str) -> String {
-    let mut idx = 1;
-    idx += 1;
-
-    format!("Hello, {}! You've been greeted from Rust!, {}", name, idx)
-}
-
-#[tauri::command]
-#[specta::specta]
-fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
+use crate::commands::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = Builder::<tauri::Wry>::new().commands(collect_commands![add,]);
+    let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
+        commands::open_project,
+        commands::create_project,
+        commands::create_document,
+        commands::rename_document,
+    ]);
 
     #[cfg(debug_assertions)]
     builder
@@ -28,9 +24,14 @@ pub fn run() {
         .expect("Failed to export TypeScript bindings");
 
     tauri::Builder::default()
+        .setup(|app| {
+            app.manage(Mutex::new(AppState::default()));
+            Ok(())
+        })
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, add])
+        .invoke_handler(builder.invoke_handler())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
