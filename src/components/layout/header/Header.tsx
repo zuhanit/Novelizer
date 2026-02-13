@@ -9,18 +9,33 @@ import {
   BreadcrumbSeparator,
 } from "../../ui/Breadcrumb";
 import { useEditorStore } from "../../../stores/useEditorStore";
+import { useProjectStore } from "../../../stores/useProjectStore";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover";
 import { Input } from "../../ui/Input";
 
 export function Header() {
   const { openFiles, activeTab } = useEditorStore();
+  const renameDocument = useProjectStore((s) => s.renameDocument);
+  const buildPath = useProjectStore((s) => s.buildPath);
 
   const activeFile = openFiles.find((file) => file.id === activeTab);
-  const path = activeFile?.path ?? [];
+  const path = activeFile ? buildPath(activeFile.id) : [];
 
-  const handleRenameSubmit = (newName: string) => {
-    console.log("Document renamed to:", newName);
-    // TODO: Implement actual rename logic with backend
+  const handleRenameSubmit = async (newName: string) => {
+    if (!activeFile) return;
+    await renameDocument(activeFile.id, newName);
+    // Update the local file tab's fileName and path
+    useEditorStore.setState((state) => ({
+      openFiles: state.openFiles.map((f) =>
+        f.id === activeFile.id
+          ? {
+              ...f,
+              fileName: newName,
+              path: useProjectStore.getState().buildPath(f.id),
+            }
+          : f
+      ),
+    }));
   };
 
   return (
