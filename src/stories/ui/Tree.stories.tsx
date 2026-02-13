@@ -1,95 +1,264 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Tree } from "../../components/ui/Tree";
-import type { TreeNode } from "../../components/ui/Tree";
-import { File, Folder } from "lucide-react";
-
+import {
+  Tree,
+  TreeItem,
+  TreeGroup,
+  TreeGroupTrigger,
+  TreeGroupContent,
+} from "../../components/ui/tree/Tree";
+import { Delete, File, Folder, Plus } from "lucide-react";
 const meta: Meta<typeof Tree> = {
   title: "UI/Tree",
   component: Tree,
+  args: {
+    onSelect: (item: unknown) => console.log("selected:", item),
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Tree>;
 
-const basicItems: TreeNode[] = [
-  {
-    label: "Documents",
-    children: [
-      { label: "Resume.pdf" },
-      { label: "Cover Letter.docx" },
-    ],
-  },
-  {
-    label: "Photos",
-    children: [
-      { label: "Vacation", children: [{ label: "beach.jpg" }, { label: "mountain.jpg" }] },
-      { label: "profile.png" },
-    ],
-  },
-  { label: "README.md" },
-];
-
 export const Default: Story = {
   args: {
-    items: basicItems,
     label: "File Explorer",
   },
+  render: (args) => (
+    <Tree {...args}>
+      <TreeGroup data="documents">
+        <TreeGroupTrigger>Documents</TreeGroupTrigger>
+        <TreeGroupContent>
+          <TreeItem data="resume">Resume.pdf</TreeItem>
+          <TreeItem data="cover-letter">Cover Letter.docx</TreeItem>
+        </TreeGroupContent>
+      </TreeGroup>
+      <TreeGroup data="photos">
+        <TreeGroupTrigger>Photos</TreeGroupTrigger>
+        <TreeGroupContent>
+          <TreeGroup data="vacation">
+            <TreeGroupTrigger>Vacation</TreeGroupTrigger>
+            <TreeGroupContent>
+              <TreeItem data="beach">beach.jpg</TreeItem>
+              <TreeItem data="mountain">mountain.jpg</TreeItem>
+            </TreeGroupContent>
+          </TreeGroup>
+          <TreeItem data="profile">profile.png</TreeItem>
+        </TreeGroupContent>
+      </TreeGroup>
+      <TreeItem data="readme">README.md</TreeItem>
+    </Tree>
+  ),
 };
 
-const deepItems: TreeNode[] = [
+export const NestedDeep: Story = {
+  args: {
+    label: "Project Structure",
+  },
+  render: (args) => (
+    <Tree {...args}>
+      <TreeGroup data="src">
+        <TreeGroupTrigger>src</TreeGroupTrigger>
+        <TreeGroupContent>
+          <TreeGroup data="components">
+            <TreeGroupTrigger>components</TreeGroupTrigger>
+            <TreeGroupContent>
+              <TreeGroup data="ui">
+                <TreeGroupTrigger>ui</TreeGroupTrigger>
+                <TreeGroupContent>
+                  <TreeItem data="button">Button.tsx</TreeItem>
+                  <TreeItem data="toggle">Toggle.tsx</TreeItem>
+                  <TreeItem data="tree">Tree.tsx</TreeItem>
+                </TreeGroupContent>
+              </TreeGroup>
+              <TreeGroup data="layout">
+                <TreeGroupTrigger>layout</TreeGroupTrigger>
+                <TreeGroupContent>
+                  <TreeItem data="header">Header.tsx</TreeItem>
+                  <TreeItem data="footer">Footer.tsx</TreeItem>
+                </TreeGroupContent>
+              </TreeGroup>
+            </TreeGroupContent>
+          </TreeGroup>
+          <TreeItem data="app">App.tsx</TreeItem>
+          <TreeItem data="main">main.tsx</TreeItem>
+        </TreeGroupContent>
+      </TreeGroup>
+    </Tree>
+  ),
+};
+
+type FileMetadata = { lastModified: string; createAt: string };
+type File =
+  | { name: string; metadata: FileMetadata; kind: "file" }
+  | {
+      name: string;
+      metadata: FileMetadata;
+      kind: "directory";
+      children: File[];
+    };
+
+const MockFiles: File[] = [
   {
-    label: "src",
-    defaultExpanded: true,
+    name: "src",
+    metadata: {
+      lastModified: "2025-03-02 10:30",
+      createAt: "2020-01-01 10:30",
+    },
+    kind: "directory",
     children: [
       {
-        label: "components",
-        defaultExpanded: true,
+        name: "components",
+        metadata: {
+          lastModified: "2025-03-01 14:00",
+          createAt: "2020-01-01 10:30",
+        },
+        kind: "directory",
         children: [
           {
-            label: "ui",
+            name: "ui",
+            metadata: {
+              lastModified: "2025-02-28 09:15",
+              createAt: "2020-01-01 10:30",
+            },
+            kind: "directory",
             children: [
-              { label: "Button.tsx" },
-              { label: "Toggle.tsx" },
-              { label: "Tree.tsx" },
+              {
+                name: "Button.tsx",
+                metadata: {
+                  lastModified: "2025-02-28 09:15",
+                  createAt: "2020-02-10 11:00",
+                },
+                kind: "file",
+              },
+              {
+                name: "Toggle.tsx",
+                metadata: {
+                  lastModified: "2025-02-27 16:45",
+                  createAt: "2020-03-05 08:30",
+                },
+                kind: "file",
+              },
+              {
+                name: "Tree.tsx",
+                metadata: {
+                  lastModified: "2025-03-02 10:30",
+                  createAt: "2020-04-12 13:20",
+                },
+                kind: "file",
+              },
             ],
           },
           {
-            label: "layout",
+            name: "layout",
+            metadata: {
+              lastModified: "2025-03-01 14:00",
+              createAt: "2020-01-15 09:00",
+            },
+            kind: "directory",
             children: [
-              { label: "Header.tsx" },
-              { label: "Footer.tsx" },
+              {
+                name: "Header.tsx",
+                metadata: {
+                  lastModified: "2025-03-01 14:00",
+                  createAt: "2020-01-15 09:00",
+                },
+                kind: "file",
+              },
+              {
+                name: "Footer.tsx",
+                metadata: {
+                  lastModified: "2025-02-20 11:30",
+                  createAt: "2020-01-15 09:30",
+                },
+                kind: "file",
+              },
             ],
           },
         ],
       },
-      { label: "App.tsx" },
-      { label: "main.tsx" },
+      {
+        name: "App.tsx",
+        metadata: {
+          lastModified: "2025-03-02 08:00",
+          createAt: "2020-01-01 10:30",
+        },
+        kind: "file",
+      },
+      {
+        name: "main.tsx",
+        metadata: {
+          lastModified: "2025-01-15 12:00",
+          createAt: "2020-01-01 10:30",
+        },
+        kind: "file",
+      },
     ],
+  },
+  {
+    name: "assets",
+    metadata: {
+      lastModified: "2025-01-10 09:00",
+      createAt: "2020-01-01 10:30",
+    },
+    kind: "directory",
+    children: [],
+  },
+  {
+    name: "README.md",
+    metadata: {
+      lastModified: "2025-02-15 17:00",
+      createAt: "2020-01-01 10:30",
+    },
+    kind: "file",
+  },
+  {
+    name: "package.json",
+    metadata: {
+      lastModified: "2025-03-01 10:00",
+      createAt: "2020-01-01 10:30",
+    },
+    kind: "file",
   },
 ];
 
-export const NestedDeep: Story = {
-  args: {
-    items: deepItems,
-    label: "Project Structure",
-  },
+const InteractionComp = ({ file }: { file: File }) => {
+  const onClickCreate = () => console.log(`${file.name} append child.`);
+  const onClickDelete = () => console.log(`${file.name} has deleted.`);
+  return (
+    <div className="flex opacity-0 hover:opacity-100">
+      <Plus onClick={onClickCreate} />
+      <Delete onClick={onClickDelete} />
+    </div>
+  );
 };
 
-const iconItems: TreeNode[] = [
-  {
-    label: "src",
-    icon: <Folder size={14} />,
-    children: [
-      { label: "index.ts", icon: <File size={14} /> },
-      { label: "utils.ts", icon: <File size={14} /> },
-    ],
-  },
-  { label: "package.json", icon: <File size={14} /> },
-];
+function renderFileTree(files: File[]) {
+  return files.map((file) =>
+    file.kind === "directory" ? (
+      <TreeGroup key={file.name} data={file}>
+        <TreeGroupTrigger>
+          <span className="flex flex-1 gap-2.5 items-center">
+            <Folder size={16} />
+            <p className="flex-1">{file.name}</p>
+            <InteractionComp file={file} />
+          </span>
+        </TreeGroupTrigger>
+        <TreeGroupContent>{renderFileTree(file.children)}</TreeGroupContent>
+      </TreeGroup>
+    ) : (
+      <TreeItem key={file.name} data={file}>
+        <span className="flex flex-1 gap-2.5 items-center">
+          <File size={16} />
+          <p className="flex-1">{file.name}</p>
+          <InteractionComp file={file} />
+        </span>
+      </TreeItem>
+    )
+  );
+}
 
-export const WithIcons: Story = {
+export const Complex: Story = {
   args: {
-    items: iconItems,
-    label: "With Icons",
+    label: "File Explorer",
   },
+  render: (args) => <Tree {...args}>{renderFileTree(MockFiles)}</Tree>,
 };
