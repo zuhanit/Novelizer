@@ -60,6 +60,10 @@ type DraggableTreeProps<T> = {
   onSelect: (data: T) => void;
   TriggerContent: DraggableTreeRenderComponentType<T>;
   LeafContent: DraggableTreeRenderComponentType<T>;
+  ItemWrapper?: React.ComponentType<{
+    node: DraggableTreeNode<T>;
+    children: React.ReactNode;
+  }>;
 };
 
 function DroppableRoot({ children }: { children: React.ReactNode }) {
@@ -80,6 +84,7 @@ export function DraggableTree<T>({
   items,
   TriggerContent,
   LeafContent,
+  ItemWrapper,
 }: DraggableTreeProps<T>) {
   const [treeItems, setTreeItems] = useState(items);
   const [activeItem, setActiveItem] = useState<DraggableTreeNode<T> | null>(
@@ -146,6 +151,7 @@ export function DraggableTree<T>({
               node={item}
               TriggerContent={TriggerContent}
               LeafContent={LeafContent}
+              ItemWrapper={ItemWrapper}
             />
           ))}
         </Tree>
@@ -193,11 +199,14 @@ function DraggableTreeItem<T>({
   node,
   TriggerContent,
   LeafContent,
+  ItemWrapper,
 }: {
   node: DraggableTreeNode<T>;
   TriggerContent: DraggableTreeProps<T>["TriggerContent"];
   LeafContent: DraggableTreeProps<T>["LeafContent"];
+  ItemWrapper?: DraggableTreeProps<T>["ItemWrapper"];
 }) {
+  const Wrapper = ItemWrapper ?? (({ children }: { children: React.ReactNode }) => <>{children}</>);
   const { attributes, listeners, setNodeRef, isDragging, isOver } = useDragDrop(
     node.id
   );
@@ -216,9 +225,11 @@ function DraggableTreeItem<T>({
         {...attributes}
         {...listeners}
       >
-        <TreeGroupTrigger>
-          <TriggerContent node={node} />
-        </TreeGroupTrigger>
+        <Wrapper node={node}>
+          <TreeGroupTrigger>
+            <TriggerContent node={node} />
+          </TreeGroupTrigger>
+        </Wrapper>
         <TreeGroupContent>
           {children.map((child) => (
             <DraggableTreeItem
@@ -226,6 +237,7 @@ function DraggableTreeItem<T>({
               node={child}
               TriggerContent={TriggerContent}
               LeafContent={LeafContent}
+              ItemWrapper={ItemWrapper}
             />
           ))}
         </TreeGroupContent>
@@ -241,7 +253,9 @@ function DraggableTreeItem<T>({
       {...attributes}
       {...listeners}
     >
-      <LeafContent node={node} />
+      <Wrapper node={node}>
+        <LeafContent node={node} />
+      </Wrapper>
     </TreeItem>
   );
 }

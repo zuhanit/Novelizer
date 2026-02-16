@@ -196,7 +196,7 @@ function TreeIndent({ depth }: { depth: number }) {
 export const TreeItem = forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li"> & { data: unknown }
->(function TreeItem({ data, className, ...props }, ref) {
+>(function TreeItem({ data, className, children, ...props }, ref) {
   const { selectedItem, selectItem } = useTree();
   const group = useContext(TreeGroupContext);
   const depth = group?.depth ?? 0;
@@ -209,16 +209,20 @@ export const TreeItem = forwardRef<
       tabIndex={-1}
       data-value={String(data)}
       aria-selected={isSelected}
-      className={cn(
-        "flex gap-2.5 items-center h-6 hover:bg-ui-selection-active rounded-sm duration-150 transition-colors outline-none",
-        "aria-selected:bg-ui-selection-active",
-        "focus:ring-1 focus:ring-ui-foreground",
-        className
-      )}
-      onClick={() => selectItem(data)}
+      className={cn("outline-none", className)}
+      {...props}
     >
-      <TreeIndent depth={depth} />
-      <span className="pl-6.5 select-none" {...props} />
+      <div
+        className={cn(
+          "flex gap-2.5 items-center h-6 pl-6.5 select-none hover:bg-ui-selection-active rounded-sm duration-150 transition-colors",
+          isSelected && "bg-ui-selection-active",
+          "focus:ring-1 focus:ring-ui-foreground"
+        )}
+        onClick={() => selectItem(data)}
+      >
+        <TreeIndent depth={depth} />
+        {children}
+      </div>
     </li>
   );
 });
@@ -312,7 +316,7 @@ export function TreeGroupTrigger({
           )}
         />
       </Button>
-      <span className="select-none">{children}</span>
+      {children}
     </div>
   );
 }
