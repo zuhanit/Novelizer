@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Modifier } from "@dnd-kit/core";
 import {
   DndContext,
@@ -58,6 +58,7 @@ type DraggableTreeProps<T> = {
   label: string;
   items: DraggableTreeNode<T>[];
   onSelect: (data: T) => void;
+  onMove?: (activeData: T, overData: T) => void;
   TriggerContent: DraggableTreeRenderComponentType<T>;
   LeafContent: DraggableTreeRenderComponentType<T>;
   ItemWrapper?: React.ComponentType<{
@@ -81,12 +82,18 @@ function DroppableRoot({ children }: { children: React.ReactNode }) {
 export function DraggableTree<T>({
   label,
   onSelect,
+  onMove,
   items,
   TriggerContent,
   LeafContent,
   ItemWrapper,
 }: DraggableTreeProps<T>) {
   const [treeItems, setTreeItems] = useState(items);
+
+  useEffect(() => {
+    setTreeItems(items);
+  }, [items]);
+
   const [activeItem, setActiveItem] = useState<DraggableTreeNode<T> | null>(
     null
   );
@@ -127,6 +134,15 @@ export function DraggableTree<T>({
     setOverItem(null);
 
     if (!over || active.id === over.id) return;
+
+    if (onMove && over.id !== TREE_ROOT_ID) {
+      const activeNode = findNode(treeItems, active.id);
+      const overNode = findNode(treeItems, over.id);
+      if (activeNode && overNode) {
+        onMove(activeNode.data, overNode.data);
+      }
+      return;
+    }
 
     if (over.id === TREE_ROOT_ID) {
       setTreeItems((items) => treeInsertRoot(items, active.id));
@@ -246,17 +262,17 @@ function DraggableTreeItem<T>({
   }
 
   return (
-    <TreeItem
-      ref={setNodeRef}
-      data={node.id}
-      className={style}
-      {...attributes}
-      {...listeners}
-    >
-      <Wrapper node={node}>
+    <Wrapper node={node}>
+      <TreeItem
+        ref={setNodeRef}
+        data={node.id}
+        className={style}
+        {...attributes}
+        {...listeners}
+      >
         <LeafContent node={node} />
-      </Wrapper>
-    </TreeItem>
+      </TreeItem>
+    </Wrapper>
   );
 }
 

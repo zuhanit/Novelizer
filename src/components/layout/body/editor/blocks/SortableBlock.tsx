@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Block, BlockProps } from "./Block";
 import { Button } from "../../../../ui/Button";
 import { GripVertical } from "lucide-react";
-import { BlockKind } from "../../../../../stores/useEditorStore";
+import { type BlockKind } from "../../../../../types/rust/bindings";
 import { BlockDropdown } from "./BlockDropdown";
 import { cn } from "tailwind-variants";
 

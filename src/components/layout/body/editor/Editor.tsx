@@ -49,7 +49,7 @@ export function Editor() {
   const {
     openFiles,
     activeTab,
-    closeFile,
+    closeDocument: closeFile,
     setActiveTab,
     addBlock,
     deleteBlock,
@@ -127,7 +127,7 @@ export function Editor() {
           <TabsTrigger key={file.id} value={file.id} className={tabTrigger()}>
             <div>
               <span className="group-data-[state=active]:font-semibold">
-                {file.fileName}
+                {file.name}
               </span>
               <Button asChild onClick={(e) => handleClose(e, file.id)}>
                 <span>
@@ -166,7 +166,7 @@ export function Editor() {
                       }}
                       id={block.id}
                       kind={block.kind}
-                      vcsState={block.vcsState}
+                      vcsState={block.vcs_state}
                       lineno={idx + 1}
                       content={block.content}
                       isFocused={focusedBlockIndex === idx}
@@ -196,7 +196,7 @@ export function Editor() {
                         <div className="w-175 opacity-50">
                           <Block
                             kind={block.kind}
-                            vcsState={block.vcsState}
+                            vcsState={block.vcs_state}
                             lineno={idx + 1}
                             content={block.content}
                           />
@@ -208,7 +208,7 @@ export function Editor() {
             </DndContext>
             <Button
               className={blank()}
-              onClick={() => addBlock(file.id, "content", blockIds.length + 1)}
+              onClick={() => addBlock(file.id, "content")}
             >
               블록을 추가하려면 클릭하세요.
             </Button>
