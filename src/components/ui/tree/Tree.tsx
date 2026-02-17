@@ -214,13 +214,14 @@ export const TreeItem = forwardRef<
     >
       <div
         className={cn(
-          "flex gap-2.5 items-center h-6 pl-6.5 select-none hover:bg-ui-selection-active rounded-sm duration-150 transition-colors",
+          "flex gap-2.5 items-center h-6 select-none hover:bg-ui-selection-active rounded-sm duration-150 transition-colors",
           isSelected && "bg-ui-selection-active",
           "focus:ring-1 focus:ring-ui-foreground"
         )}
         onClick={() => selectItem(data)}
       >
         <TreeIndent depth={depth} />
+        <span className="w-4 shrink-0" />
         {children}
       </div>
     </li>
