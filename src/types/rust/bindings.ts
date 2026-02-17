@@ -29,9 +29,97 @@ async createDocument(parent: Node<FileMetadata>, name: string) : Promise<Result<
     else return { status: "error", error: e  as any };
 }
 },
-async renameDocument(document: Document, newName: string) : Promise<Result<Document, string>> {
+async renameDocument(path: string, newName: string) : Promise<Result<Document, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("rename_document", { document, newName }) };
+    return { status: "ok", data: await TAURI_INVOKE("rename_document", { path, newName }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async openDocument(path: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("open_document", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async saveDocument(document: Document, path: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_document", { document, path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async addBlock(document: Document, path: string, kind: BlockKind, index: number | null) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("add_block", { document, path, kind, index }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteBlock(document: Document, path: string, blockId: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_block", { document, path, blockId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async reorderBlocks(document: Document, path: string, startIndex: number, endIndex: number) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reorder_blocks", { document, path, startIndex, endIndex }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async updateBlockContent(document: Document, path: string, blockId: string, content: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("update_block_content", { document, path, blockId, content }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeBlockKind(document: Document, path: string, blockId: string, kind: BlockKind) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_block_kind", { document, path, blockId, kind }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteDocument(path: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_document", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async scanProjectDocuments() : Promise<Result<Node<FileMetadata>[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("scan_project_documents") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async moveDocument(sourcePath: string, targetPath: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("move_document", { sourcePath, targetPath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async duplicateDocument(path: string) : Promise<Result<Document, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("duplicate_document", { path }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -42,6 +130,13 @@ async renameDocument(document: Document, newName: string) : Promise<Result<Docum
 /** user-defined events **/
 
 
+export const events = __makeEvents__<{
+documentChanged: DocumentChanged,
+projectChanged: ProjectChanged
+}>({
+documentChanged: "document-changed",
+projectChanged: "project-changed"
+})
 
 /** user-defined constants **/
 
@@ -49,11 +144,15 @@ async renameDocument(document: Document, newName: string) : Promise<Result<Docum
 
 /** user-defined types **/
 
-export type Block = { id: string; kind: BlockKind; content: string }
-export type BlockKind = "Content" | "Memo"
-export type Document = { id: string; name: string; blocks: Block[]; path: string }
+export type Block = { id: string; kind: BlockKind; content: string; vcs_state: VCSState }
+export type BlockKind = "content" | "memo"
+export type Document = { id: string; name: string; blocks: Block[] }
+export type DocumentChangeKind = "Deleted" | "Renamed" | { Moved: { old_path: string; new_path: string } }
+export type DocumentChanged = { document: Document; kind: DocumentChangeKind }
 export type FileMetadata = { path: string; name: string }
 export type Node<T> = { children: Node<T>[]; data: T }
+export type ProjectChanged = null
+export type VCSState = "default" | "added" | "modified" | "removed"
 
 /** tauri-specta globals **/
 

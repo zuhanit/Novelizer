@@ -1,144 +1,75 @@
 import { create } from "zustand";
-import { commands, Block as RustBlock, Document } from "../types/rust/bindings";
-import { useProjectStore } from "./useProjectStore";
-
-export type BlockKind = "content" | "memo";
-
-export type Block = {
-  id: string;
-  kind: BlockKind;
-  vcsState: "default" | "modified" | "added" | "removed";
-  content: string;
-};
-
-export interface FileTab {
-  id: string;
-  fileName: string;
-  path: string[];
-  blocks: Block[];
-}
+import { commands, events, type BlockKind, type Document, type VCSState } from "../types/rust/bindings";
 
 interface EditorState {
-  openFiles: FileTab[];
+  openFiles: Document[];
+  filePaths: Record<string, string>; // document id → filesystem path
   activeTab: string | null;
   focusedBlockIndex: number | null;
-  openFileById: (fileId: string) => Promise<void>;
-  openFile: (file: FileTab) => void;
-  closeFile: (fileId: string) => void;
+  openFileByPath: (path: string) => Promise<void>;
+  closeDocument: (fileId: string) => void;
   setActiveTab: (fileId: string) => void;
-  addBlock: (fileId: string, kind: BlockKind, index?: number) => void;
-  deleteBlock: (fileId: string, blockId: string) => void;
-  reorderBlocks: (fileId: string, startIndex: number, endIndex: number) => void;
+  addBlock: (fileId: string, kind: BlockKind, index?: number) => Promise<void>;
+  deleteBlock: (fileId: string, blockId: string) => Promise<void>;
+  reorderBlocks: (fileId: string, startIndex: number, endIndex: number) => Promise<void>;
   updateBlockContent: (
     fileId: string,
     blockId: string,
     content: string
   ) => void;
-  changeBlockKind: (fileId: string, blockId: string, kind: BlockKind) => void;
+  changeBlockKind: (fileId: string, blockId: string, kind: BlockKind) => Promise<void>;
   setFocusedBlock: (index: number) => void;
-  getActiveFile: () => FileTab | null;
+  getActiveFile: () => Document | null;
+  getFilePath: (fileId: string) => string | undefined;
 }
 
-function rustBlocksToBlocks(rustBlocks: RustBlock[]): Block[] {
-  return rustBlocks.map((b) => ({
-    id: b.id,
-    kind: b.kind as BlockKind,
-    vcsState: "default" as const,
-    content: b.content,
-  }));
+const pendingSaves = new Map<string, ReturnType<typeof setTimeout>>();
+
+function replaceFile(openFiles: Document[], updated: Document): Document[] {
+  return openFiles.map((f) => (f.id === updated.id ? updated : f));
 }
 
-function blocksToRustBlocks(blocks: Block[]): RustBlock[] {
-  return blocks.map((b) => ({
-    id: b.id,
-    kind: b.kind,
-    content: b.content,
-  }));
-}
-
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
-function debouncedSave(projectPath: string, fileId: string, fileName: string, blocks: Block[]) {
-  if (saveTimeout) clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(async () => {
-    const doc: Document = {
-      id: fileId,
-      fileName,
-      blocks: blocksToRustBlocks(blocks),
-    };
-    const result = await commands.saveDocument(projectPath, doc);
-    if (result.status === "error") {
-      console.error("Failed to save document:", result.error);
-    }
-  }, 1000);
-}
-
-function saveNow(projectPath: string, file: FileTab) {
-  const doc: Document = {
-    id: file.id,
-    fileName: file.fileName,
-    blocks: blocksToRustBlocks(file.blocks),
-  };
-  commands.saveDocument(projectPath, doc).then((result) => {
-    if (result.status === "error") {
-      console.error("Failed to save document:", result.error);
-    }
-  });
+function cancelPendingSave(fileId: string) {
+  const timeout = pendingSaves.get(fileId);
+  if (timeout) {
+    clearTimeout(timeout);
+    pendingSaves.delete(fileId);
+  }
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   openFiles: [],
+  filePaths: {},
   activeTab: null,
   focusedBlockIndex: null,
 
-  openFileById: async (fileId: string) => {
-    const { openFiles } = get();
-    const isAlreadyOpen = openFiles.some((f) => f.id === fileId);
+  openFileByPath: async (path: string) => {
+    const { filePaths } = get();
 
-    if (isAlreadyOpen) {
-      set({ activeTab: fileId });
+    // path가 이미 열려있는지 확인
+    const existingId = Object.entries(filePaths).find(([, p]) => p === path)?.[0];
+    if (existingId) {
+      set({ activeTab: existingId });
       return;
     }
 
-    const projectPath = useProjectStore.getState().projectPath;
-    if (!projectPath) return;
-
-    const result = await commands.loadDocument(projectPath, fileId);
+    const result = await commands.openDocument(path);
     if (result.status === "ok") {
       const doc = result.data;
-      const path = useProjectStore.getState().buildPath(fileId);
-      const fileTab: FileTab = {
-        id: doc.id,
-        fileName: doc.fileName,
-        path,
-        blocks: rustBlocksToBlocks(doc.blocks),
-      };
 
       set({
-        openFiles: [...get().openFiles, fileTab],
-        activeTab: fileId,
+        openFiles: [...get().openFiles, doc],
+        filePaths: { ...get().filePaths, [doc.id]: path },
+        activeTab: doc.id,
       });
     } else {
       console.error("Failed to load document:", result.error);
     }
   },
 
-  openFile: (file) => {
-    const { openFiles } = get();
-    const isAlreadyOpen = openFiles.some((f) => f.id === file.id);
-
-    if (isAlreadyOpen) {
-      set({ activeTab: file.id });
-    } else {
-      set({
-        openFiles: [...openFiles, file],
-        activeTab: file.id,
-      });
-    }
-  },
-
-  closeFile: (fileId) => {
-    const { openFiles, activeTab } = get();
+  closeDocument: (fileId) => {
+    const { openFiles, activeTab, filePaths } = get();
+    cancelPendingSave(fileId);
     const fileIndex = openFiles.findIndex((f) => f.id === fileId);
     const newOpenFiles = openFiles.filter((f) => f.id !== fileId);
 
@@ -151,8 +82,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       newActiveTab = null;
     }
 
+    const { [fileId]: _, ...remainingPaths } = filePaths;
+
     set({
       openFiles: newOpenFiles,
+      filePaths: remainingPaths,
       activeTab: newActiveTab,
     });
   },
@@ -161,122 +95,97 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ activeTab: fileId });
   },
 
-  addBlock: (fileId, kind, index) => {
-    const { openFiles } = get();
-    const projectPath = useProjectStore.getState().projectPath;
+  addBlock: async (fileId, kind, index) => {
+    const doc = get().openFiles.find((f) => f.id === fileId);
+    const path = get().filePaths[fileId];
+    if (!doc || !path) return;
 
-    const newOpenFiles = openFiles.map((file) => {
-      if (file.id !== fileId) return file;
-
-      const newBlock: Block = {
-        id: crypto.randomUUID(),
-        kind,
-        vcsState: "added",
-        content: "",
-      };
-
-      const newBlocks = [...file.blocks];
-      if (index !== undefined) {
-        newBlocks.splice(index, 0, newBlock);
-      } else {
-        newBlocks.push(newBlock);
-      }
-
-      const updated = { ...file, blocks: newBlocks };
-      if (projectPath) saveNow(projectPath, updated);
-      return updated;
-    });
-
-    set({ openFiles: newOpenFiles });
+    cancelPendingSave(fileId);
+    const result = await commands.addBlock(doc, path, kind, index ?? null);
+    if (result.status === "ok") {
+      set({ openFiles: replaceFile(get().openFiles, result.data) });
+    } else {
+      console.error("Failed to add block:", result.error);
+    }
   },
 
-  deleteBlock: (fileId, blockId) => {
-    const { openFiles } = get();
-    const projectPath = useProjectStore.getState().projectPath;
+  deleteBlock: async (fileId, blockId) => {
+    const doc = get().openFiles.find((f) => f.id === fileId);
+    const path = get().filePaths[fileId];
+    if (!doc || !path) return;
 
-    const newOpenFiles = openFiles.map((file) => {
-      if (file.id !== fileId) return file;
-
-      const newBlocks = file.blocks.filter((block) => block.id !== blockId);
-      const updated = { ...file, blocks: newBlocks };
-      if (projectPath) saveNow(projectPath, updated);
-      return updated;
-    });
-
-    set({ openFiles: newOpenFiles });
+    cancelPendingSave(fileId);
+    const result = await commands.deleteBlock(doc, path, blockId);
+    if (result.status === "ok") {
+      set({ openFiles: replaceFile(get().openFiles, result.data) });
+    } else {
+      console.error("Failed to delete block:", result.error);
+    }
   },
 
-  reorderBlocks: (fileId, startIndex, endIndex) => {
-    const { openFiles } = get();
-    const projectPath = useProjectStore.getState().projectPath;
+  reorderBlocks: async (fileId, startIndex, endIndex) => {
+    const doc = get().openFiles.find((f) => f.id === fileId);
+    const path = get().filePaths[fileId];
+    if (!doc || !path) return;
 
-    const newOpenFiles = openFiles.map((file) => {
-      if (file.id !== fileId) return file;
-
-      const newBlocks = [...file.blocks];
-      const [removed] = newBlocks.splice(startIndex, 1);
-      newBlocks.splice(endIndex, 0, removed);
-
-      const updated = { ...file, blocks: newBlocks };
-      if (projectPath) saveNow(projectPath, updated);
-      return updated;
-    });
-
-    set({ openFiles: newOpenFiles });
+    cancelPendingSave(fileId);
+    const result = await commands.reorderBlocks(doc, path, startIndex, endIndex);
+    if (result.status === "ok") {
+      set({ openFiles: replaceFile(get().openFiles, result.data) });
+    } else {
+      console.error("Failed to reorder blocks:", result.error);
+    }
   },
 
   updateBlockContent: (fileId, blockId, content) => {
     const { openFiles } = get();
-    const projectPath = useProjectStore.getState().projectPath;
 
+    // 낙관적 로컬 업데이트
     const newOpenFiles = openFiles.map((file) => {
       if (file.id !== fileId) return file;
 
       const newBlocks = file.blocks.map((block) => {
         if (block.id !== blockId) return block;
-        const newVcsState: "added" | "modified" =
-          block.vcsState === "added" ? "added" : "modified";
-        return {
-          ...block,
-          content,
-          vcsState: newVcsState,
-        };
+        const newVcsState: VCSState =
+          block.vcs_state === "added" ? "added" : "modified";
+        return { ...block, content, vcs_state: newVcsState };
       });
 
-      const updated = { ...file, blocks: newBlocks };
-      if (projectPath) {
-        debouncedSave(projectPath, updated.id, updated.fileName, updated.blocks);
-      }
-      return updated;
+      return { ...file, blocks: newBlocks };
     });
 
     set({ openFiles: newOpenFiles });
+
+    // 파일별 debounce로 백엔드 저장
+    cancelPendingSave(fileId);
+    const timeout = setTimeout(async () => {
+      pendingSaves.delete(fileId);
+      const doc = get().openFiles.find((f) => f.id === fileId);
+      const path = get().filePaths[fileId];
+      if (!doc || !path) return;
+
+      const result = await commands.updateBlockContent(doc, path, blockId, content);
+      if (result.status === "ok") {
+        set({ openFiles: replaceFile(get().openFiles, result.data) });
+      } else {
+        console.error("Failed to update block content:", result.error);
+      }
+    }, 1000);
+    pendingSaves.set(fileId, timeout);
   },
 
-  changeBlockKind: (fileId, blockId, kind) => {
-    const { openFiles } = get();
-    const projectPath = useProjectStore.getState().projectPath;
+  changeBlockKind: async (fileId, blockId, kind) => {
+    const doc = get().openFiles.find((f) => f.id === fileId);
+    const path = get().filePaths[fileId];
+    if (!doc || !path) return;
 
-    const newOpenFiles = openFiles.map((file) => {
-      if (file.id !== fileId) return file;
-
-      const newBlocks = file.blocks.map((block) => {
-        if (block.id !== blockId) return block;
-        const newVcsState: "added" | "modified" =
-          block.vcsState === "added" ? "added" : "modified";
-        return {
-          ...block,
-          kind,
-          vcsState: newVcsState,
-        };
-      });
-
-      const updated = { ...file, blocks: newBlocks };
-      if (projectPath) saveNow(projectPath, updated);
-      return updated;
-    });
-
-    set({ openFiles: newOpenFiles });
+    cancelPendingSave(fileId);
+    const result = await commands.changeBlockKind(doc, path, blockId, kind);
+    if (result.status === "ok") {
+      set({ openFiles: replaceFile(get().openFiles, result.data) });
+    } else {
+      console.error("Failed to change block kind:", result.error);
+    }
   },
 
   setFocusedBlock: (index) => {
@@ -287,4 +196,31 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { openFiles, activeTab } = get();
     return openFiles.find((f) => f.id === activeTab) ?? null;
   },
+
+  getFilePath: (fileId) => {
+    return get().filePaths[fileId];
+  },
 }));
+
+// DocumentChanged 이벤트 리스너
+events.documentChanged.listen((e) => {
+  const { document, kind } = e.payload;
+  if (kind === "Deleted") {
+    useEditorStore.getState().closeDocument(document.id);
+  } else if (kind === "Renamed") {
+    const { openFiles } = useEditorStore.getState();
+    useEditorStore.setState({
+      openFiles: replaceFile(openFiles, document),
+    });
+  } else if (typeof kind === "object" && "Moved" in kind) {
+    const { old_path, new_path } = kind.Moved;
+    const { filePaths } = useEditorStore.getState();
+    // old_path로 열려있던 문서의 filePaths를 new_path로 갱신
+    const entryId = Object.entries(filePaths).find(([, p]) => p === old_path)?.[0];
+    if (entryId) {
+      useEditorStore.setState({
+        filePaths: { ...filePaths, [entryId]: new_path },
+      });
+    }
+  }
+});

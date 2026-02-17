@@ -10,32 +10,21 @@ import {
 } from "../../ui/Breadcrumb";
 import { useEditorStore } from "../../../stores/useEditorStore";
 import { useProjectStore } from "../../../stores/useProjectStore";
+import { commands } from "../../../types/rust/bindings";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover";
 import { Input } from "../../ui/Input";
 
 export function Header() {
-  const { openFiles, activeTab } = useEditorStore();
-  const renameDocument = useProjectStore((s) => s.renameDocument);
+  const { openFiles, activeTab, filePaths } = useEditorStore();
   const buildPath = useProjectStore((s) => s.buildPath);
 
   const activeFile = openFiles.find((file) => file.id === activeTab);
-  const path = activeFile ? buildPath(activeFile.id) : [];
+  const activePath = activeFile ? filePaths[activeFile.id] : undefined;
+  const breadcrumbs = activePath ? buildPath(activePath) : [];
 
   const handleRenameSubmit = async (newName: string) => {
-    if (!activeFile) return;
-    await renameDocument(activeFile.id, newName);
-    // Update the local file tab's fileName and path
-    useEditorStore.setState((state) => ({
-      openFiles: state.openFiles.map((f) =>
-        f.id === activeFile.id
-          ? {
-              ...f,
-              fileName: newName,
-              path: useProjectStore.getState().buildPath(f.id),
-            }
-          : f
-      ),
-    }));
+    if (!activeFile || !activePath) return;
+    await commands.renameDocument(activePath, newName);
   };
 
   return (
@@ -49,11 +38,11 @@ export function Header() {
       <div className="flex items-center flex-col justify-self-center">
         {activeFile && (
           <>
-            <Title title={activeFile?.fileName} />
+            <Title title={activeFile?.name} />
             <Breadcrumb>
               <BreadcrumbList>
-                {path.map((segment, idx) =>
-                  idx < path.length - 1 ? (
+                {breadcrumbs.map((segment, idx) =>
+                  idx < breadcrumbs.length - 1 ? (
                     <Fragment key={idx}>
                       <BreadcrumbItem>
                         <BreadcrumbLink href="">{segment}</BreadcrumbLink>
