@@ -8,7 +8,7 @@ import {
   StickyNote,
   Trash2,
 } from "lucide-react";
-import { BlockKind } from "../../../../../stores/useEditorStore";
+import { type BlockKind } from "../../../../../types/rust/bindings";
 import { Button } from "../../../../ui/Button";
 import {
   DropdownMenu,

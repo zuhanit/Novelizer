@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { Button } from "../../../ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/Popover";
-import { BlockKind } from "../../../../stores/useEditorStore";
+import { type BlockKind } from "../../../../types/rust/bindings";
 
 interface AddBlockButtonProps {
   onAddBlock: (kind: BlockKind) => void;

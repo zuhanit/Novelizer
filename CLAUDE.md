@@ -37,6 +37,7 @@ npx tsc
 UI design is available in Figma: https://www.figma.com/design/tEa3hRr3j8T4lWGAugX8nr/Novelizer
 
 The design includes:
+
 - Desktop layout (1440x1082) and iPad layout (834x1194)
 - Component system: Tree elements, Block editor, Status bar, Left sidebar, Header, Footer
 - Novel/story writing editor with hierarchical file navigation, numbered block-based editing, and timeline/chapter view
@@ -46,3 +47,8 @@ The design includes:
 ## TypeScript Config
 
 Strict mode is enabled with `noUnusedLocals`, `noUnusedParameters`, and `noFallthroughCasesInSwitch`.
+
+## Obsidian Vault
+
+Obsidian vault path: /Volumes/External/Novelizer-obsidian
+Project note default path: /Volumes/External/Novelizer-obsidian/Novelizer

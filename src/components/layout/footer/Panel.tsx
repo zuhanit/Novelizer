@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { tv } from "tailwind-variants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../ui/Tabs";
 import { useShallow } from "zustand/react/shallow";
-import { Block, useEditorStore } from "../../../stores/useEditorStore";
+import { useEditorStore } from "../../../stores/useEditorStore";
+import { type Block } from "../../../types/rust/bindings";
 import { Button } from "../../ui/Button";
 
 const panelVariants = tv({
