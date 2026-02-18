@@ -125,7 +125,6 @@ export function Editor() {
       <TabsList>
         {openFiles.map((file) => (
           <TabsTrigger key={file.id} value={file.id} className={tabTrigger()}>
-            <div>
               <span className="group-data-[state=active]:font-semibold">
                 {file.name}
               </span>
@@ -138,7 +137,6 @@ export function Editor() {
                   />
                 </span>
               </Button>
-            </div>
           </TabsTrigger>
         ))}
       </TabsList>
