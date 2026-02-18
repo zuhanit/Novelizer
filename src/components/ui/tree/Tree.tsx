@@ -166,7 +166,7 @@ export function Tree({
         ref={treeRef}
         tabIndex={0}
         className={cn(
-          "inline-block ilist-none p-0 m-0 outline-none",
+          "list-none p-0 m-0 outline-none",
           className
         )}
         role="tree"
