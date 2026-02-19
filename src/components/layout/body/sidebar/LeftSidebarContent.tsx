@@ -17,7 +17,7 @@ export function LeftSidebarContent({
 }: {
   node: DraggableTreeNode<FileMetadata>;
 }) {
-  return <span className="text-xs truncate">{node.label}</span>;
+  return <span className="text-xs truncate text-foreground">{node.label}</span>;
 }
 
 export function LeftSidebarItemWrapper({
