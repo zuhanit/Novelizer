@@ -6,7 +6,7 @@ export const tabsVariants = tv({
     root: "flex flex-col",
     list: "flex",
     trigger: [
-      "flex items-center justify-center px-3 py-1.5",
+      "group flex items-center gap-2.5 justify-center px-3",
       "text-xs text-muted-foreground",
       "border-transparent transition-colors duration-150",
       "hover:text-foreground",
