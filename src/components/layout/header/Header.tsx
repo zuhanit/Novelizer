@@ -44,10 +44,12 @@ export function Header() {
                 {breadcrumbs.map((segment, idx) =>
                   idx < breadcrumbs.length - 1 ? (
                     <Fragment key={idx}>
-                      <BreadcrumbItem>
+                      <BreadcrumbItem className="text-sm text-nowrap">
                         <BreadcrumbLink href="">{segment}</BreadcrumbLink>
                       </BreadcrumbItem>
-                      <BreadcrumbSeparator />
+                      <BreadcrumbSeparator>
+                        /
+                      </BreadcrumbSeparator>
                     </Fragment>
                   ) : (
                     <BreadcrumbItem key={idx}>
@@ -89,7 +91,7 @@ function RenamableSegment({
 
   return (
     <Popover>
-      <PopoverTrigger>{value}</PopoverTrigger>
+      <PopoverTrigger className="text-xs text-nowrap">{value}</PopoverTrigger>
       <PopoverContent>
         <Input
           type="text"
@@ -103,3 +105,4 @@ function RenamableSegment({
     </Popover>
   );
 }
+
