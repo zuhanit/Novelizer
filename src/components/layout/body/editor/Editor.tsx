@@ -26,14 +26,6 @@ import { Block } from "./blocks/Block";
 const editorVariants = tv({
   slots: {
     base: "flex flex-col bg-ui-background w-full h-full",
-    tabTrigger: [
-      "group flex items-center gap-2.5 px-3 py-1.5",
-      "text-xs text-muted-foreground",
-      "border-b border-transparent transition-colors duration-150",
-      "hover:text-foreground",
-      "data-[state=active]:text-foreground",
-      "data-[state=active]:border-accent-enabled",
-    ],
     content: "flex-1 w-full overflow-y-auto",
     blocks: "flex flex-col items-center w-175 mx-auto",
     empty:
@@ -44,7 +36,7 @@ const editorVariants = tv({
 });
 
 export function Editor() {
-  const { base, tabTrigger, content, blocks, empty, blank } = editorVariants();
+  const { base, content, blocks, empty, blank } = editorVariants();
   const [activeId, setActiveId] = useState<string | null>(null);
   const {
     openFiles,
@@ -124,8 +116,11 @@ export function Editor() {
     >
       <TabsList>
         {openFiles.map((file) => (
-          <TabsTrigger key={file.id} value={file.id} className={tabTrigger()}>
-              <span className="group-data-[state=active]:font-semibold">
+          <TabsTrigger key={file.id} value={file.id}>
+              <span
+                className="group-data-[state=active]:font-semibold after:block after:h-0 after:overflow-hidden after:invisible after:font-semibold after:content-[attr(data-text)]"
+                data-text={file.name}
+              >
                 {file.name}
               </span>
               <Button asChild onClick={(e) => handleClose(e, file.id)}>
