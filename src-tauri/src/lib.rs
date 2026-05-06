@@ -35,7 +35,7 @@ pub fn run() {
 
     #[cfg(debug_assertions)]
     builder
-        .export(Typescript::default(), "../src/types/rust/bindings.ts")
+        .export(Typescript::default(), "../frontend/types/rust/bindings.ts")
         .expect("Failed to export TypeScript bindings");
 
     let invoke_handler = builder.invoke_handler();
