@@ -1,0 +1,14 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8.9", features = ["macros"] }
+serde = { version = "1", features = ["derive"] }
+config = { version = "0.1.0", path = "../config" }
+db = { version = "0.1.0", path = "../db" }
+tokio = { version = "1.52.3", features = ["full"] }
+utoipa = { version = "5.5.0", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
+vcs ={ workspace = true }

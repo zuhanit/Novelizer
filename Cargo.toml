@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["crates/activitypub","crates/config", "crates/db", "crates/forgefed", "crates/server", "crates/vcs",
+    "src-tauri",
+]
+
+[workspace.dependencies]
+git2 = "0.20.4"
+gix = "0.83.0"
+thiserror = "2.0.18"
+vcs ={ version = "0.1.0", path = "crates/vcs"}
+db ={ version = "0.1.0", path = "crates/db"}
+server ={ version = "0.1.0", path = "crates/server"}
